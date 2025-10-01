@@ -20,8 +20,8 @@ n58 sixth.
 bar 0.
 
 bar (plus N 1) :-
-  at N 0 A,
-   at N 1 B.
+  at N 0 is A,
+   at N 1 is B.
   
 cp N is? I :- interval I, bar N.
 
@@ -89,8 +89,8 @@ sound (plus N 1) :-
 
 music N :- sound N, bar (plus N 1).
 
-at T 0 N :- cf T N.
-at T 1 N :-
+at T 0 is N :- cf T N.
+at T 1 is N :-
   cp T is I,
   difference I K,
   cf T M,
