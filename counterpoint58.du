@@ -20,8 +20,8 @@ n58 sixth.
 bar 0.
 
 bar (plus N 1) :-
-  at N 0 A,
-   at N 1 B.
+  at N 0 is A,
+   at N 1 is B.
   
 cp N is? I :- interval I, bar N.
 
@@ -68,6 +68,18 @@ cpDown N :-
   cf (plus N 1) R2,
   plus R1 D1 > plus R2 D2.
 
+
+contrary (plus N 1) :-  cpDown N, cfUp N.
+contrary (plus N 1) :-  cpUp N, cfDown N.
+
+
+#  from a 6th stepwise outward to octave
+cadence (plus N 1) :- 
+  cfDown N, cpUp N, cp N is sixth, cp (plus N 1) is octave.
+# from a 3rd stepwise inward to unison
+cadence (plus N 1) :-
+  cfUp N, cpDown N, cp N is third, cp (plus N 1) is unison.
+
 # r1 and r2 are natural numbers, i1 and i2 are consonant ivls
 # nd58 R1 I1 R2 I2 :- n58 I2.
 n58 N :-  cp N is union.
@@ -89,8 +101,8 @@ sound (plus N 1) :-
 
 music N :- sound N, bar (plus N 1).
 
-at T 0 N :- cf T N.
-at T 1 N :-
+at T 0 is N :- cf T N.
+at T 1 is N :-
   cp T is I,
   difference I K,
   cf T M,
@@ -98,15 +110,32 @@ at T 1 N :-
   
 
 
+
+length is 4.
+end is (plus N 1) :- length is N.
+
+validBegin :- cp 0 is union.
+validBegin :- cp 0 is octave.
+
+validLast :- cp length is union.
+validLast :- cp length is octave.
+
+
 # Specify the length of the piece
-#demand music 2.
-#forbid music 3.
+#demand music length.
+#forbid music end.
+#demand validBegin.
+#demand validLast.
+# demand cadence length.
+
 
 # "User" "inputs" cantus firmus voice here
 # index then note degree
-cf 0 4.
-cf 1 5.
-cf 2 8.
+cf 0 0.
+cf 1 2.
+cf 2 3.
+cf 3 1.
+cf 4 0.
 
 #
 #
