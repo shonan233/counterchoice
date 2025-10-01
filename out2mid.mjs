@@ -1,18 +1,22 @@
 import { Dusa } from 'dusa';
 import * as fs from 'node:fs';
 
-const dusa = new Dusa(`
-	at 5 0 is 5.
-	at 0 0 is 0.
-	at 2 1 is 2.
-	at 4 1 is 4.
-	at 1 1 is 1.
-	at 6 0 is 6.
-	at 3 0 is 3.
-	at 7 0 is 6.
-`);
+const contents = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
 
-for (const solution of dusa) {
+const dusa = new Dusa(contents);
+
+function mapNote(n) {
+	//n is a scale degree, sooooooo
+	//base of scale is 48 (c4)
+	const base = 48; //c4
+	const octave = Math.floor(n / 7);
+	const offset = [0, 2, 4, 5, 7, 9, 11];
+	return base + offset[n - octave * 7] + 12 * octave;
+}
+
+const solution = dusa.solution;
+// for (const solution of dusa) 
+{
 	const tracks = [ ];
 	for (const at of solution.lookup('at')) {
 		const [time, voice, note] = at;
@@ -35,8 +39,6 @@ for (const solution of dusa) {
 
 	for (const track of tracks) {
 
-		//length TBD
-
 		let trackData = [];
 		//for each note, write note-on, then note-off
 		let prev_t = 0;
@@ -50,15 +52,19 @@ for (const solution of dusa) {
 			trackData.push(Buffer.from([
 				(t - prev_t) * 4, //delta time
 				0x90, //note on, channel 0
-				0x3E, //note # 3E
+				mapNote(track[t]), //note # 3E
 				0x64, //velocity 100
 				4, //delta time
 				0x80, //note off, channel 0
-				0x3E, //note # 3E
+				mapNote(track[t]), //note # 3E
 				0x00 //velocity 0
 			]));
-			prev_t = t;
+			prev_t = t + 1;
 		}
+
+		trackData.push(Buffer.from([0x00, 0xff, 0x2f, 0x00]));
+		
+
 		const all = Buffer.concat(trackData);
 		data.push(Buffer.from('MTrk')); //type
 		const length = Buffer.alloc(4);
