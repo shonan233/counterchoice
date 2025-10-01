@@ -1,0 +1,112 @@
+#builtin INT_PLUS plus.
+
+interval union.
+interval third.
+interval fifth.
+interval sixth.
+interval octave.
+
+difference union 0.
+difference third 2.
+difference fifth 4.
+difference sixth 5.
+difference octave 7.
+
+n58 union.
+n58 third.
+n58 sixth.
+
+ 
+bar 0.
+
+bar (plus N 1) :-
+  at N 0 A,
+   at N 1 B.
+  
+cp N is? I :- interval I, bar N.
+
+cfSame N :-
+  cf N M,
+  cf (plus N 1) M.
+
+cfUp N :- 
+  cf N A,
+  cf (plus N 1) B,
+  B > A.
+
+cfDown N :-
+  cf N A,
+  cf (plus N 1) B,
+  A > B.
+
+cpSame N :-
+  cp N is  I1,
+  cp (plus N 1) is I2,
+  difference I1 D1,
+  difference I2 D2,
+  cf N R1,
+  cf (plus N 1) R2,
+  plus R1 D1 == plus R2 D2.
+
+
+cpUp N :-
+  cp N is I1,
+  cp (plus N 1) is I2,
+  difference I1 D1,
+  difference I2 D2,
+  cf N R1,
+  cf (plus N 1) R2,
+  plus R1 D1 < plus R2 D2.
+
+
+cpDown N :-
+  cp N is I1,
+  cp (plus N 1) is I2,
+  difference I1 D1,
+  difference I2 D2,
+  cf N R1,
+  cf (plus N 1) R2,
+  plus R1 D1 > plus R2 D2.
+
+# r1 and r2 are natural numbers, i1 and i2 are consonant ivls
+# nd58 R1 I1 R2 I2 :- n58 I2.
+n58 N :-  cp N is union.
+n58 N :-  cp N is third.
+n58 N :-  cp N is sixth.
+nd58 N :- n58 N.
+nd58 N :- cfUp N, cpDown N.
+nd58 N :- cfDown N, cpUp N.
+nd58 N :- cfSame N.
+nd58 N :- cpSame N.
+
+sound_at N :- nd58 N.
+
+sound 0 :- sound_at 0.
+sound (plus N 1) :-
+  sound N,
+  sound_at (plus N 1).
+
+
+music N :- sound N, bar (plus N 1).
+
+at T 0 N :- cf T N.
+at T 1 N :-
+  cp T is I,
+  difference I K,
+  cf T M,
+  plus M K == N.
+  
+
+
+# Specify the length of the piece
+#demand music 2.
+#forbid music 3.
+
+# "User" "inputs" cantus firmus voice here
+# index then note degree
+cf 0 4.
+cf 1 5.
+cf 2 8.
+
+#
+#
