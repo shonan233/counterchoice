@@ -1,4 +1,5 @@
 #builtin STRING_CONCAT concat
+#builtin NAT_SUCC suc
 
 # Song "parser", where song N is song[N..]
 
@@ -20,5 +21,5 @@ note "G" 11.
 note "A" 12.
 note "B" 13.
 
-song (s N) SRest :- song N S, (concat Note SRest) is S, note Note NoteNum.
+song (suc N) SRest :- song N S, (concat Note SRest) is S, note Note NoteNum.
 cf N NoteNum :- song N S, (concat Note _) is S, note Note NoteNum.
