@@ -10,7 +10,7 @@ let inputCf = "";
 let cfLength = 0;
 
 for (const cf of inputParsed.lookup('cf')) {
-  inputCf += "cf "+cf[0]+" "+cf[1]+".\n"
+  inputCf += "cf "+cf[0]+" is "+cf[1]+".\n"
   cfLength++;
 }
 cfLength--; // off by one error?

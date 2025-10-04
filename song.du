@@ -5,7 +5,10 @@
 
 # Mary had a little lamb
 # song 0 "agfgaaagggaCC".
-song 0 "agfgaaafgggfaCCf".
+# song 0 "agfgaaafgggfaCCf".
+
+# row, row, row your boat
+song 0 "cccdeedefg".
 
 note "c" 0.
 note "d" 1.
@@ -23,4 +26,4 @@ note "A" 12.
 note "B" 13.
 
 song (suc N) SRest :- song N S, (concat Note SRest) is S, note Note NoteNum.
-cf N NoteNum :- song N S, (concat Note _) is S, note Note NoteNum.
+cf N is NoteNum :- song N S, (concat Note _) is S, note Note NoteNum.

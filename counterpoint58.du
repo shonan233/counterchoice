@@ -1,131 +1,105 @@
-#builtin INT_PLUS plus.
-#builtin NAT_SUCC suc.
+#builtin INT_PLUS plus
+#builtin NAT_SUCC suc
 
-interval union.
-interval third.
-interval fifth.
-interval sixth.
-interval octave.
+interval union is 0.
+interval third is 2.
+interval fifth is 4.
+interval sixth is 5.
+interval octave is 7.
 
-difference union is 0.
-difference third is 2.
-difference fifth is 4.
-difference sixth is 5.
-difference octave is 7.
+# cfMovement N = cantus firmus motion between N, N+1
 
+cfMovement N is same :-
+  cf N is A,
+  cf (suc N) is A.
 
-bar 0.
-
-bar (suc N) :-
-  at N 0 is A,
-   at N 1 is B.
-
-cp N is? I :- interval I, bar N.
-
-cfSame N :-
-  cf N M,
-  cf (suc N) M.
-
-cfUp N :-
-  cf N A,
-  cf (suc N) B,
+cfMovement N is up :-
+  cf N is A,
+  cf (suc N) is B,
   B > A.
 
-cfDown N :-
-  cf N A,
-  cf (suc N) B,
-  A > B.
+cfMovement N is down :-
+  cf N is A,
+  cf (suc N) is B,
+  B < A.
 
-cpSame N :-
-  cp N is  I1,
-  cp (suc N) is I2,
-  cf N R1,
-  cf (suc N) R2,
-  plus R1 (difference I1) == plus R2 (difference I2).
+# cpMovement N = counterpoint motion between N, N+1
 
+cp N is? I :- interval I is _, cf N is _.
 
-cpUp N :-
+cpMovement N is same :-
   cp N is I1,
   cp (suc N) is I2,
-  cf N R1,
-  cf (suc N) R2,
-  plus R1 (difference I1) < plus R2 (difference I2).
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) == plus R2 (interval I2).
 
-
-cpDown N :-
+cpMovement N is up :-
   cp N is I1,
   cp (suc N) is I2,
-  cf N R1,
-  cf (suc N) R2,
-  plus R1 (difference I1) > plus R2 (difference I2).
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) < plus R2 (interval I2).
 
+cpMovement N is down :-
+  cp N is I1,
+  cp (suc N) is I2,
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) > plus R2 (interval I2).
 
-contrary (suc N) :-  cpDown N, cfUp N.
-contrary (suc N) :-  cpUp N, cfDown N.
+# cadence N+1 = bar N+1 is one of two cadences:
 
-
-#  from a 6th stepwise outward to octave
+# ...from a 6th stepwise outward to octave
 cadence (suc N) :-
-  cfDown N, cpUp N, cp N is sixth, cp (suc N) is octave.
-# from a 3rd stepwise inward to unison
+  cfMovement N is down,
+  cpMovement N is up,
+  cp N is sixth,
+  cp (suc N) is octave.
+
+# ...from a 3rd stepwise inward to unison
 cadence (suc N) :-
-  cfUp N, cpDown N, cp N is third, cp (suc N) is union.
+  cfMovement N is up,
+  cpMovement N is down,
+  cp N is third,
+  cp (suc N) is union.
 
-# r1 and r2 are natural numbers, i1 and i2 are consonant ivls
-# nd58 R1 I1 R2 I2 :- n58 I2.
-n58 N :-  cp N is union.
-n58 N :-  cp N is third.
-n58 N :-  cp N is sixth.
-nd58 N :- n58 M, suc N is M.
-nd58 N :- cfUp N, cpDown N.
-nd58 N :- cfDown N, cpUp N.
-nd58 N :- cfSame N.
-nd58 N :- cpSame N.
+# prohibit direct fifths and direct octaves
 
-sound_at N :- nd58 N.
+parallelMovement N :- cfMovement N is up, cpMovement N is up.
+parallelMovement N :- cfMovement N is down, cpMovement N is down.
 
-sound 0 :- sound_at 0.
-sound (suc N) :-
-  sound N,
-  sound_at (suc N).
+directFifth (suc N) :- parallelMovement N, cp (suc N) is fifth.
+directOctave (suc N) :- parallelMovement N, cp (suc N) is octave.
 
+#forbid directFifth N.
+#forbid directOctave N.
 
-music N :- sound N, bar (suc N).
-
-at T 0 is N :- cf T N.
-at T 1 is N :-
-  cp T is I,
-  cf T M,
-  plus M (difference I) == N.
-
-
-end is (suc N) :- length is N.
+# must start and end on union/octave, and must end on cadence
 
 validBegin :- cp 0 is union.
 validBegin :- cp 0 is octave.
 
-validLast :- cp length is union.
-validLast :- cp length is octave.
+validEnd :- cp length is union.
+validEnd :- cp length is octave.
 
-
-# Specify the length of the piece
-#demand music length.
-#forbid music end.
 #demand validBegin.
-#demand validLast.
-# demand cadence length.
+#demand validEnd.
+#demand cadence length.
 
-directFifth N :- cfUp N, cpUp N, cp (suc N) is fifth.
-directFifth N :- cfDown N, cpDown N, cp (suc N) is fifth.
-# #demand directFifth N.
+# Generate "output"
+
+at T 0 is N :- cf T is N.
+at T 1 is (plus M (interval I)) :- cp T is I, cf T is M.
 
 # "User" "inputs" cantus firmus voice here
-# index then note degree
-# cf 0 0.
-# cf 1 2.
-# cf 2 3.
-# cf 3 1.
-# cf 4 0.
+# cf [note number] is [note degree]
+# cf 0 is 0.
+# cf 1 is 2.
+# cf 2 is 3.
+# cf 3 is 1.
+# cf 4 is 0.
+# length is 4.
 
 #
 # Generated cf facts and "length is _" fact goes below
