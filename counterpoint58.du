@@ -12,10 +12,6 @@ difference fifth 4.
 difference sixth 5.
 difference octave 7.
 
-n58 union.
-n58 third.
-n58 sixth.
-
  
 bar 0.
 
@@ -78,14 +74,14 @@ cadence (plus N 1) :-
   cfDown N, cpUp N, cp N is sixth, cp (plus N 1) is octave.
 # from a 3rd stepwise inward to unison
 cadence (plus N 1) :-
-  cfUp N, cpDown N, cp N is third, cp (plus N 1) is unison.
+  cfUp N, cpDown N, cp N is third, cp (plus N 1) is union.
 
 # r1 and r2 are natural numbers, i1 and i2 are consonant ivls
 # nd58 R1 I1 R2 I2 :- n58 I2.
 n58 N :-  cp N is union.
 n58 N :-  cp N is third.
 n58 N :-  cp N is sixth.
-nd58 N :- n58 N.
+nd58 N :- n58 M, plus N 1 is M.
 nd58 N :- cfUp N, cpDown N.
 nd58 N :- cfDown N, cpUp N.
 nd58 N :- cfSame N.
@@ -125,6 +121,9 @@ validLast :- cp length is octave.
 #demand validLast.
 # demand cadence length.
 
+directFifth N :- cfUp N, cpUp N, cp (plus N 1) is fifth.
+directFifth N :- cfDown N, cpDown N, cp (plus N 1) is fifth.
+# #demand directFifth N.
 
 # "User" "inputs" cantus firmus voice here
 # index then note degree
