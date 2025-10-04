@@ -109,9 +109,6 @@ at T 1 is N :-
   plus M K == N.
   
 
-
-
-length is 4.
 end is (plus N 1) :- length is N.
 
 validBegin :- cp 0 is union.
@@ -131,11 +128,12 @@ validLast :- cp length is octave.
 
 # "User" "inputs" cantus firmus voice here
 # index then note degree
-cf 0 0.
-cf 1 2.
-cf 2 3.
-cf 3 1.
-cf 4 0.
+# cf 0 0.
+# cf 1 2.
+# cf 2 3.
+# cf 3 1.
+# cf 4 0.
 
 #
-#
+# Generated cf facts and "length is _" fact goes below
+

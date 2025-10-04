@@ -4,7 +4,7 @@
 # Song "parser", where song N is song[N..]
 
 # Mary had a little lamb
-song 0 is "agfgaaagggaCC".
+song 0 "agfgaaagggaCC".
 
 note "c" 0.
 note "d" 1.

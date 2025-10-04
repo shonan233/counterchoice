@@ -1,8 +1,6 @@
 import { Dusa } from 'dusa';
 import * as fs from 'node:fs';
 
-/* TODO revisit -- my version of dusa is out of date!
-////////
 
 const inputText = fs.readFileSync("song.du", {encoding:"utf8"});
 
@@ -12,23 +10,28 @@ const inputParsed = new Dusa(inputText).solution;
 // console.log("-----");
 
 let inputCf = "";
+let cfLength = 0;
 
 for (const cf of inputParsed.lookup('cf')) {
   // console.log(cf);
   inputCf += "cf "+cf[0]+" "+cf[1]+".\n"
+  cfLength++;
 }
+cfLength--; // off by one error?
+inputCf += "length is " + cfLength + ".";
 
 console.log("cf input:")
 console.log("------")
 console.log(inputCf);
-*/
 
 
 let solverText = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
 // const contents = fs.readFileSync("together.du", {encoding:"utf8"});
 
-// TODO: uncomment this to try again with the added cf.
-// solverText += inputCf;
+solverText += inputCf;
+
+
+fs.writeFileSync('together.du', Buffer.from(solverText));
 
 const dusa = new Dusa(solverText);
 
