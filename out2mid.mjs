@@ -1,9 +1,36 @@
 import { Dusa } from 'dusa';
 import * as fs from 'node:fs';
 
-const contents = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
+/* TODO revisit -- my version of dusa is out of date!
+////////
 
-const dusa = new Dusa(contents);
+const inputText = fs.readFileSync("song.du", {encoding:"utf8"});
+
+const inputParsed = new Dusa(inputText).solution;
+
+// console.log(inputParsed)
+// console.log("-----");
+
+let inputCf = "";
+
+for (const cf of inputParsed.lookup('cf')) {
+  // console.log(cf);
+  inputCf += "cf "+cf[0]+" "+cf[1]+".\n"
+}
+
+console.log("cf input:")
+console.log("------")
+console.log(inputCf);
+*/
+
+
+let solverText = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
+// const contents = fs.readFileSync("together.du", {encoding:"utf8"});
+
+// TODO: uncomment this to try again with the added cf.
+// solverText += inputCf;
+
+const dusa = new Dusa(solverText);
 
 function mapNote(n) {
 	//n is a scale degree, sooooooo
@@ -91,3 +118,4 @@ const solution = dusa.solution;
 //make binary blob
 
 //write
+
