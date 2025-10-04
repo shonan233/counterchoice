@@ -62,7 +62,7 @@ const solution = dusa.solution; // just get one solution for now
   header.writeUInt32BE(6, 4); //length
   header.writeUInt16BE(1, 8); //format
   header.writeUInt16BE(tracks.length, 10); //# of tracks
-  header.writeUInt16BE(1, 12); //quarter note is one tick // MAYBE REVISIT
+  header.writeUInt16BE(4, 12); //quarter note is 4 ticks // MAYBE REVISIT
 
   for (const track of tracks) {
     let trackData = [];
