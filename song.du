@@ -9,7 +9,12 @@
 
 # row, row, row your boat
 # song 0 "cccdeedefg".
-song 0 "ccccccccdeeeeedeefgggggg".
+# song 0 "ccccccccdeeeeedeefgggggg".
+
+# Twinkle twinkle little star
+ttls 0 is "ccggaagcffeeddcc". 
+ttls 1 is "ggffeedc".
+song 0 (concat (ttls 0) (ttls 1) (ttls 1) (ttls 0)).
 
 note "c" 0.
 note "d" 1.
