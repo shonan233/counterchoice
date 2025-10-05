@@ -8,7 +8,8 @@
 # song 0 "agfgaaafgggfaCCf".
 
 # row, row, row your boat
-song 0 "cccdeedefg".
+# song 0 "cccdeedefg".
+song 0 "ccccccccdeeeeedeefgggggg".
 
 note "c" 0.
 note "d" 1.

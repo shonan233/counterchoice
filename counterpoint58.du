@@ -1,4 +1,5 @@
 #builtin INT_PLUS plus
+#builtin INT_MINUS minus
 #builtin NAT_SUCC suc
 
 interval union is 0.
@@ -7,90 +8,93 @@ interval fifth is 4.
 interval sixth is 5.
 interval octave is 7.
 
-# cfMovement N = cantus firmus motion between N, N+1
+# scale degrees
+note 0.
+note 1.
+note 2.
+note 3.
+note 4.
+note 5.
+note 6.
+note 7.
 
-cfMovement N is same :-
-  cf N is A,
-  cf (suc N) is A.
+# make choices of counterpoint notes
+judgeCP N I is? good :- 
+  cf N is _, interval I is _.
 
-cfMovement N is up :-
-  cf N is A,
-  cf (suc N) is B,
-  B > A.
+cp T is? I :- interval I is _, judgeCP T I is good.
 
-cfMovement N is down :-
-  cf N is A,
-  cf (suc N) is B,
-  B < A.
+# the rest is defining what "judgeCP" means.
 
-# cpMovement N = counterpoint motion between N, N+1
+# calculate counterpoint scale degree
+cpNote T is (plus N (interval I)) :- cp T is I, cf T is N.
 
-cp N is? I :- interval I is _, cf N is _.
+# D for "degree"
+#lazy movement
+movement D D is same :- note D.
+movement D D' is up :- note D, note D', D' > D.
+movement D D' is down :- note D, note D', D' < D.
 
-cpMovement N is same :-
-  cp N is I1,
-  cp (suc N) is I2,
-  cf N is R1,
-  cf (suc N) is R2,
-  plus R1 (interval I1) == plus R2 (interval I2).
+#lazy chordMovement
+chordMovement N1 I1 N2 I2 is (pair M1 M2)
+  :-  movement N1 N2 is M1,
+      movement (plus N1 (interval I1))
+               (plus N2 (interval I2)) is M2.
 
-cpMovement N is up :-
-  cp N is I1,
-  cp (suc N) is I2,
-  cf N is R1,
-  cf (suc N) is R2,
-  plus R1 (interval I1) < plus R2 (interval I2).
+parallel (pair up up).
+parallel (pair down down).
 
-cpMovement N is down :-
-  cp N is I1,
-  cp (suc N) is I2,
-  cf N is R1,
-  cf (suc N) is R2,
-  plus R1 (interval I1) > plus R2 (interval I2).
+# prohibit direct fifths and direct octaves on parallel movement
 
-# cadence N+1 = bar N+1 is one of two cadences:
+judgeCP (suc T) fifth is bad :-
+  cf T is N, cp T is I,
+  cf T is N',
+  chordMovement N I N' fifth is M,
+  parallel M.
+  
+judgeCP (suc T) octave is bad :-
+  cf T is N, cp T is I,
+  cf T is N',
+  chordMovement N I N' octave is M,
+  parallel M.
+  
+
+
+# cadence for two cf note sequence N1 N2 
+# is one of two interval sequences:
 
 # ...from a 6th stepwise outward to octave
-cadence (suc N) :-
-  cfMovement N is down,
-  cpMovement N is up,
-  cp N is sixth,
-  cp (suc N) is octave.
-
+cadence N1 N2 is (seq sixth octave) :-
+  chordMovement N1 sixth N2 octave is (pair down up).
+  
 # ...from a 3rd stepwise inward to unison
-cadence (suc N) :-
-  cfMovement N is up,
-  cpMovement N is down,
-  cp N is third,
-  cp (suc N) is union.
+cadence N1 N2 is (seq third unison) :-
+  chordMovement N1 third N2 unison is (pair up down).
 
-# prohibit direct fifths and direct octaves
+#lazy cadence
 
-parallelMovement N :- cfMovement N is up, cpMovement N is up.
-parallelMovement N :- cfMovement N is down, cpMovement N is down.
+cadenceAt T is (cadence N1 N2) :-
+  cf T is N1, cf (suc T) is N2.
 
-directFifth (suc N) :- parallelMovement N, cp (suc N) is fifth.
-directOctave (suc N) :- parallelMovement N, cp (suc N) is octave.
-
-#forbid directFifth N.
-#forbid directOctave N.
+#lazy cadenceAt
 
 # must start and end on union/octave, and must end on cadence
 
-validBegin :- cp 0 is union.
-validBegin :- cp 0 is octave.
+cp 0 is {union, octave}.
+cp length is {union, octave}.
 
-validEnd :- cp length is union.
-validEnd :- cp length is octave.
-
-#demand validBegin.
-#demand validEnd.
-#demand cadence length.
-
+judgeCP T I' is bad :- 
+  length is L,
+  suc T is L,
+  cp length is IFinal,
+  cadenceAt T is (seq I IFinal),
+  interval I' is _,
+  I' != I.
+ 
 # Generate "output"
 
 at T 0 is N :- cf T is N.
-at T 1 is (plus M (interval I)) :- cp T is I, cf T is M.
+at T 1 is N :- cpNote T is N.
 
 # "User" "inputs" cantus firmus voice here
 # cf [note number] is [note degree]

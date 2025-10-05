@@ -1,0 +1,112 @@
+#builtin INT_PLUS plus
+#builtin INT_MINUS minus
+#builtin NAT_SUCC suc
+
+interval union is 0.
+interval third is 2.
+interval fifth is 4.
+interval sixth is 5.
+interval octave is 7.
+
+# cfMovement N = cantus firmus motion between N, N+1
+
+cfMovement N is same :-
+  cf N is A,
+  cf (suc N) is A.
+
+cfMovement N is up :-
+  cf N is A,
+  cf (suc N) is B,
+  B > A.
+
+cfMovement N is down :-
+  cf N is A,
+  cf (suc N) is B,
+  B < A.
+
+# cpMovement N = counterpoint motion between N, N+1
+
+cp N is? I :- interval I is _, cf N is _.
+
+cpMovement N is same :-
+  cp N is I1,
+  cp (suc N) is I2,
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) == plus R2 (interval I2).
+
+cpMovement N is up :-
+  cp N is I1,
+  cp (suc N) is I2,
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) < plus R2 (interval I2).
+
+cpMovement N is down :-
+  cp N is I1,
+  cp (suc N) is I2,
+  cf N is R1,
+  cf (suc N) is R2,
+  plus R1 (interval I1) > plus R2 (interval I2).
+
+# cadence N+1 I = bar N+1 is one of two cadences:
+
+# ...from a 6th stepwise outward to octave
+cadence (suc N) :-
+  cfMovement N is down,
+  cpMovement N is up,
+  cp N is sixth.
+
+
+# ...from a 3rd stepwise inward to unison
+cadence (suc N) :-
+  cfMovement N is up,
+  cpMovement N is down,
+  cp N is third.
+
+
+# prohibit direct fifths and direct octaves
+
+parallelMovement N :- cfMovement N is up, cpMovement N is up.
+parallelMovement N :- cfMovement N is down, cpMovement N is down.
+
+directFifth (suc N) :- parallelMovement N, cp (suc N) is fifth.
+directOctave (suc N) :- parallelMovement N, cp (suc N) is octave.
+
+#forbid directFifth N.
+#forbid directOctave N.
+
+# must start and end on union/octave, and must end on cadence
+
+# CM: replacing these lines + #demand validBegin/validEnd 
+#   with direct constraints on cp 0 and cp length.
+# validBegin :- cp 0 is union.
+# validBegin :- cp 0 is octave.
+# validEnd :- cp length is union.
+# validEnd :- cp length is octave.
+# #demand validBegin.
+# #demand validEnd.
+
+cp 0 is {union, octave}.
+cp length is {union, octave}.
+
+# can we also replace the cadence demand?
+#demand cadence length.
+
+# Generate "output"
+
+at T 0 is N :- cf T is N.
+at T 1 is (plus M (interval I)) :- cp T is I, cf T is M.
+
+# "User" "inputs" cantus firmus voice here
+# cf [note number] is [note degree]
+# cf 0 is 0.
+# cf 1 is 2.
+# cf 2 is 3.
+# cf 3 is 1.
+# cf 4 is 0.
+# length is 4.
+
+#
+# Generated cf facts and "length is _" fact goes below
+
