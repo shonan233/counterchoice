@@ -1,0 +1,239 @@
+#builtin INT_PLUS plus
+#builtin INT_MINUS minus
+#builtin NAT_SUCC suc
+
+interval union is 0.
+interval third is 2.
+interval fifth is 4.
+interval sixth is 5.
+interval octave is 7.
+
+
+# scale degrees
+note 0.
+note 1.
+note 2.
+note 3.
+note 4.
+note 5.
+note 6.
+note 7.
+
+# make choices of counterpoint notes
+judgeCP N I is? good :- 
+  cf N is _, interval I is _.
+
+cp T is? I :- interval I is _, judgeCP T I is good.
+
+# the rest is defining what "judgeCP" means.
+
+# calculate counterpoint scale degree
+cpNote T is (plus N (interval I)) :- cp T is I, cf T is N.
+
+# D for "degree"
+#lazy movement
+movement D D is same :- note D.
+movement D D' is up :- note D, note D', D' > D.
+movement D D' is down :- note D, note D', D' < D.
+
+#lazy chordMovement
+chordMovement N1 I1 N2 I2 is (pair M1 M2)
+  :-  movement N1 N2 is M1,
+      movement (plus N1 (interval I1))
+               (plus N2 (interval I2)) is M2.
+
+parallel (pair up up).
+parallel (pair down down).
+
+
+
+# cadence for two cf note sequence N1 N2 
+# is one of two interval sequences:
+
+# ...from a 6th stepwise outward to octave
+cadence N1 N2 is (seq sixth octave) :-
+  chordMovement N1 sixth N2 octave is (pair down up).
+  
+# ...from a 3rd stepwise inward to unison
+cadence N1 N2 is (seq third unison) :-
+  chordMovement N1 third N2 unison is (pair up down).
+
+#lazy cadence
+
+cadenceAt T is (cadence N1 N2) :-
+  cf T is N1, cf (suc T) is N2.
+
+#lazy cadenceAt
+
+# must start and end on union/octave, and must end on cadence
+
+cp 0 is {union, octave}.
+cp length is {union, octave}.
+
+judgeCP T I' is bad :- 
+  length is L,
+  suc T is L,
+  cp length is IFinal,
+  cadenceAt T is (seq I IFinal),
+  interval I' is _,
+  I' != I.
+
+
+
+# #######################################################
+# ********************** start of changes ***************
+# #######################################################
+
+
+# Remarks
+# major/minor/augmented checking is not implemented
+# cantus firmus is always assumed to be below counterpoint
+# Important: leap and jump difference is not explicitly stated in ToneSavvy, I assumed they were the same
+
+
+
+# counts the distance between two consecutive notes in the counterpoint melody, in absolute value
+intervalCP (suc T) is (minus N2 N1) :-
+  cpNote T is N1,
+  cpNote (suc T) is N2,
+  N2 > N1.
+intervalCP (suc T) is (minus N1 N2) :-
+  cpNote T is N1,
+  cpNote (suc T) is N2,
+  N1 > N2.
+intervalCP (suc T) is 0 :-
+  cpNote T is N1,
+  cpNote (suc T) is N2,
+  N1 == N2.
+
+
+
+
+# a step is when the cp moves by only 1 in the next note
+step (cp T1) :-
+  cpNote T is _,
+  (suc T) is T1,
+  intervalCP T1 is D,
+  D == 1.
+
+# a leap is when the cp moves by a 3rd or more
+leap (cp T1) :-
+  cpNote T is _,
+  (suc T) is T1,
+  intervalCP T1 is D,
+  D > 1.
+
+# a largeLeap is when the cp moves by a 5th or 6th
+largeLeap (cp T1) :-
+  cpNote T is _,
+  (suc T) is T1,
+  intervalCP T1 is D,
+  D > 3.
+# Both in leap and largeLeap, there is no upper bound checking since the checking is done in the invalidCPmov part
+
+
+
+# I modified the rule prohibiting  direct fifths and direct octaves on parallel movement to also check for jumps (leaps) in the counterpoint melody, stated as "Direct octaves or fifths: if both voices are moving in the same direction (and the upper voice by jump), they should not move to a vertical octave or fifth."
+judgeCP (suc T) octave is bad :-
+  cf T is N, cp T is I,
+  cf (suc T) is N',
+  chordMovement N I N' octave is M,
+  parallel M,
+  leap (cp (suc T)).
+judgeCP (suc T) fifth is bad :-
+  cf T is N, cp T is I,
+  cf (suc T) is N',
+  chordMovement N I N' fifth is M,
+  cp (suc T) is I2,
+  parallel M,
+  leap (cp (suc T)).
+
+
+
+# The following two rules implement the rule: "Parallel fifths: if the previous harmonic interval was a fifth, your next note should not create the same harmonic interval again."
+# and the rule: "Parallel octaves: if the previous harmonic interval was an octave, your next note should not create the same harmonic interval again."
+judgeCP (suc T) octave is bad :-
+  cf T is N, cp T is I,
+  cf (suc T) is N',
+  chordMovement N octave N' octave is _.
+judgeCP (suc T) fifth is bad :-
+  cf T is N, cp T is I,
+  cf (suc T) is N',
+  chordMovement N fifth N' fifth is _.
+
+# invalidCPmov is a counterpoint melody movement that is not allowed in the rule: "Your counter-melody should move in steps, or in leaps of a 3rd, 4th, 5th, or 6th."
+invalidCPmov (cp T1) :-
+  cpNote T is _,
+  (suc T) is T1,
+  intervalCP T1 is D,
+  D > 5.
+invalidCPmov (cp T1) :-
+  cpNote T is _,
+  (suc T) is T1,
+  intervalCP T1 is 0.
+
+judgeCP (suc T) I is bad :-
+  cp T is I,
+  invalidCPmov (cp (suc T)).
+
+
+# The following implements the following rule using the largeLeap defined before: "Your counter-melody should not contain multiple successive large leaps (5th or 6th) in the same direction."
+judgeCP T2 I is bad :-
+  cpNote T is _,
+  (suc T) is T1,
+  (suc T1) is T2,
+  cp T2 is I,
+  largeLeap (cp T1),
+  largeLeap (cp T2),
+  movement (cpNote T) (cpNote T1) is up,
+  movement (cpNote T1) (cpNote T2) is up.
+
+judgeCP T2 I is bad :-
+  cpNote T is _,
+  (suc T) is T1,
+  (suc T1) is T2,
+  cp T2 is I,
+  largeLeap (cp T1),
+  largeLeap (cp T2),
+  movement (cpNote T) (cpNote T1) is down,
+  movement (cpNote T1) (cpNote T2) is down.
+
+  
+
+# implements "Your counter melody should not contain more than 3 leaps in a row."
+judgeCP T4 I is bad :-
+  cpNote T is _,
+  (suc T) is T1,
+  (suc T1) is T2,
+  (suc T2) is T3,
+  (suc T3) is T4,
+  cp T4 is I,
+  leap (cp T1),
+  leap (cp T2),
+  leap (cp T3),
+  leap (cp T4).
+
+
+
+# #######################################################
+# ********************** end of changes *****************
+# #######################################################
+
+
+
+# Generate "output"
+
+at T 0 is N :- cf T is N.
+at T 1 is N :- cpNote T is N.
+
+# "User" "inputs" cantus firmus voice here
+# cf [note number] is [note degree]
+# cf 0 is 0.
+# cf 1 is 2.
+# cf 2 is 3.
+# cf 3 is 1.
+# cf 4 is 0.
+# length is 4.
+
+#
+# Generated cf facts and "length is _" fact goes below
