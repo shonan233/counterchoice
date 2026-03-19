@@ -2,7 +2,7 @@
 #builtin INT_MINUS minus
 #builtin NAT_SUCC suc
 
-interval union is 0.
+interval unison is 0.
 interval third is 2.
 interval fifth is 4.
 interval sixth is 5.
@@ -42,6 +42,7 @@ chordMovement N1 I1 N2 I2 is (pair M1 M2)
       movement (plus N1 (interval I1))
                (plus N2 (interval I2)) is M2.
 
+#lazy parallel
 parallel (pair up up).
 parallel (pair down down).
 
@@ -65,10 +66,10 @@ cadenceAt T is (cadence N1 N2) :-
 
 #lazy cadenceAt
 
-# must start and end on union/octave, and must end on cadence
+# must start and end on unison/octave, and must end on cadence
 
-cp 0 is {union, octave}.
-cp length is {union, octave}.
+cp 0 is {unison, octave}.
+cp length is {unison, octave}.
 
 judgeCP T I' is bad :- 
   length is L,
@@ -93,6 +94,7 @@ judgeCP T I' is bad :-
 
 
 # counts the distance between two consecutive notes in the counterpoint melody, in absolute value
+#lazy intervalCP
 intervalCP (suc T) is (minus N2 N1) :-
   cpNote T is N1,
   cpNote (suc T) is N2,
@@ -110,65 +112,61 @@ intervalCP (suc T) is 0 :-
 
 
 # a step is when the cp moves by only 1 in the next note
-step (cp T1) :-
-  cpNote T is _,
-  (suc T) is T1,
-  intervalCP T1 is D,
-  D == 1.
+step (cp (suc T)) :-
+  cf T is _, # changed the grounding to cf as it costs less to compute, cp and cpNote always exist at T when cf exists
+  intervalCP (suc T) is 1. # shortened by setting it directly to 1
 
 # a leap is when the cp moves by a 3rd or more
-leap (cp T1) :-
-  cpNote T is _,
-  (suc T) is T1,
-  intervalCP T1 is D,
+leap (cp (suc T)) :-
+  cf T is _,
+  intervalCP (suc T) is D,
   D > 1.
 
 # a largeLeap is when the cp moves by a 5th or 6th
-largeLeap (cp T1) :-
-  cpNote T is _,
-  (suc T) is T1,
-  intervalCP T1 is D,
+largeLeap (cp (suc T)) :-
+  cf T is _,
+  intervalCP (suc T) is D,
   D > 3.
 # Both in leap and largeLeap, there is no upper bound checking since the checking is done in the invalidCPmov part
+#lazy step
+#lazy leap
+#lazy largeLeap
 
 
-
-# I modified the rule prohibiting  direct fifths and direct octaves on parallel movement to also check for jumps (leaps) in the counterpoint melody, stated as "Direct octaves or fifths: if both voices are moving in the same direction (and the upper voice by jump), they should not move to a vertical octave or fifth."
+# I modified the rule prohibiting  direct fifths and direct octaves on parallel movement to also check for jumps (large leaps) in the counterpoint melody, stated as "Direct octaves or fifths: if both voices are moving in the same direction (and the upper voice by jump), they should not move to a vertical octave or fifth."
 judgeCP (suc T) octave is bad :-
   cf T is N, cp T is I,
   cf (suc T) is N',
   chordMovement N I N' octave is M,
   parallel M,
-  leap (cp (suc T)).
+  largeLeap (cp (suc T)).
 judgeCP (suc T) fifth is bad :-
   cf T is N, cp T is I,
   cf (suc T) is N',
   chordMovement N I N' fifth is M,
-  cp (suc T) is I2,
   parallel M,
-  leap (cp (suc T)).
+  largeLeap (cp (suc T)).
 
-
-
-# The following two rules implement the rule: "Parallel fifths: if the previous harmonic interval was a fifth, your next note should not create the same harmonic interval again."
+# The following two implement the rule: "Parallel fifths: if the previous harmonic interval was a fifth, your next note should not create the same harmonic interval again."
 # and the rule: "Parallel octaves: if the previous harmonic interval was an octave, your next note should not create the same harmonic interval again."
 judgeCP (suc T) octave is bad :-
-  cf T is N, cp T is I,
-  cf (suc T) is N',
-  chordMovement N octave N' octave is _.
+  cp T is octave,
+  cp (suc T) is octave.
 judgeCP (suc T) fifth is bad :-
-  cf T is N, cp T is I,
-  cf (suc T) is N',
-  chordMovement N fifth N' fifth is _.
+  cp T is fifth,
+  cp (suc T) is fifth.
+
+
 
 # invalidCPmov is a counterpoint melody movement that is not allowed in the rule: "Your counter-melody should move in steps, or in leaps of a 3rd, 4th, 5th, or 6th."
+#lazy invalidCPmov
 invalidCPmov (cp T1) :-
-  cpNote T is _,
+  cf T is _,
   (suc T) is T1,
   intervalCP T1 is D,
   D > 5.
 invalidCPmov (cp T1) :-
-  cpNote T is _,
+  cf T is _,
   (suc T) is T1,
   intervalCP T1 is 0.
 
@@ -179,7 +177,7 @@ judgeCP (suc T) I is bad :-
 
 # The following implements the following rule using the largeLeap defined before: "Your counter-melody should not contain multiple successive large leaps (5th or 6th) in the same direction."
 judgeCP T2 I is bad :-
-  cpNote T is _,
+  cf T is _,
   (suc T) is T1,
   (suc T1) is T2,
   cp T2 is I,
@@ -189,7 +187,7 @@ judgeCP T2 I is bad :-
   movement (cpNote T1) (cpNote T2) is up.
 
 judgeCP T2 I is bad :-
-  cpNote T is _,
+  cf T is _,
   (suc T) is T1,
   (suc T1) is T2,
   cp T2 is I,
@@ -202,7 +200,7 @@ judgeCP T2 I is bad :-
 
 # implements "Your counter melody should not contain more than 3 leaps in a row."
 judgeCP T4 I is bad :-
-  cpNote T is _,
+  cf T is _,
   (suc T) is T1,
   (suc T1) is T2,
   (suc T2) is T3,
@@ -212,7 +210,6 @@ judgeCP T4 I is bad :-
   leap (cp T2),
   leap (cp T3),
   leap (cp T4).
-
 
 
 # #######################################################
@@ -229,11 +226,22 @@ at T 1 is N :- cpNote T is N.
 # "User" "inputs" cantus firmus voice here
 # cf [note number] is [note degree]
 # cf 0 is 0.
-# cf 1 is 2.
-# cf 2 is 3.
-# cf 3 is 1.
-# cf 4 is 0.
-# length is 4.
+# cf 1 is 1.
+# cf 2 is 2.
+# cf 3 is 3.
+# cf 4 is 4.
+# cf 5 is 0.
+# cf 6 is 1.
+# length is 6.
+
+
+ # demand cp T1 is octave, cp T0 is octave, (suc T0) is T1.
+ # demand cp _ is fifth.
+# demand cpNote T2 is 7, cpNote T1 is 6, cpNote T0 is 0, (suc T0) is T1, (suc T1) is T2.
+# demand cpNote T is _, (suc T) is T1, (suc T1) is T2, (suc T2) is T3, leap (cp T1), leap (cp T2), leap (cp T3).
+  
+  
+ #forbid judgeCP _ _ is bad.
 
 #
 # Generated cf facts and "length is _" fact goes below
