@@ -1,0 +1,14 @@
+#builtin STRING_CONCAT concat
+#builtin NAT_SUCC suc
+
+ cf 0 is 2.
+ cf 1 is 1.
+ cf 2 is 0.
+ cf 3 is 1.
+ cf 4 is 2.
+ cf 5 is 2.
+ cf 6 is 1.
+ cf 7 is 0.
+ cf 8 is 1.
+ cf 9 is 2.
+ length is 9.

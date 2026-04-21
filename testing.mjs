@@ -20,8 +20,15 @@ console.log("------")
 console.log(inputCf);
 
 // then concat that parsed input to the solver text as "together.du"
-let solverText = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
-solverText += inputCf;
+let solverText = fs.readFileSync("counterpoint_forbid.du", {encoding:"utf8"})
+.split(/\r?\n/)
+.join('\n');
+
+const normalizedInputCf = inputCf
+.split(/\r?\n/)
+.join('\n');
+
+solverText += '\n' + normalizedInputCf;  
 fs.writeFileSync('together.du', Buffer.from(solverText));
 
 
@@ -81,7 +88,7 @@ function check_starts_with_unison_or_octave(solution)
 {
   for (const [T, I] of solution.lookup('cp')) 
     {
-    console.log("I =", I, "type:", typeof I);
+    console.log("T =", T, "I =", I, "type:", typeof I);
     //console.log("T =", T, "type:", typeof T);
     if (T === 0) 
     {
@@ -125,17 +132,39 @@ function check_ends_with_unison_or_octave(solution)
 
 function check_ends_with_cadence(solution)
 {
-  /*for (const [T, cadence] of solution.lookup('cadenceAt'))
+  for (const [T, val] of solution.lookup('cf'))
   {
-    console.log("cadence =", cadence, "type:", typeof cadence);
-    if (T === cfLength - 1)
+    console.log(`cf ${T} is ${val}`);
+  }
+  for (const [T, I] of solution.lookup('cp')) 
+  {
+    console.log(`cp ${T} is ${I.name}`);
+    if ((T === cfLength) && (cfLength > 0))
     {
-      return true; // for now, just check that the cadence is in the right place. Implementing actual cadence checking is a TODO.
+      const prevI = solution.get('cp', T - 1);
+      const cp = solution.get('cpNote', T);
+      const prevcp = solution.get('cpNote', T - 1);
+      const cf = solution.get('cf', T);
+      const prevcf = solution.get('cf', T - 1);
+      console.log(`cp len=${T} is ${cp}, cp (len-1) is ${prevcp}, I len is ${I.name}, I (len-1) is ${prevI.name}, cf len is ${cf}, cf (len-1) is ${prevcf}`);
+      if ((I.name === 'octave') 
+      && (prevI.name === 'sixth')
+      && ((cp-prevcp)>0) && ((cf-prevcf)<0) )
+      {
+        console.log("Passed test: ends with cadence of type 6th to octave");
+        return true; 
+      }
+      if ((I.name === 'unison') 
+      && (prevI.name === 'third')
+      && ((cp-prevcp)<0) && ((cf-prevcf)>0) )
+      {
+          console.log("Passed test: ends with cadence of type 3rd to unison");
+          return true; 
+      }
     }
   }
-  */
-  console.log("Passed test: ends with cadence (not actually implemented yet)");
-  return true;
+  console.log("Failed test: Does not end with a cadence");
+  return false;
 }
 
 
@@ -240,6 +269,37 @@ function check_more_than_3_leaps(solution)
     return true;
 }
 
+function check_direct_fifth_and_octave(solution)
+{
+  for (const [T, I] of solution.lookup('cp')) 
+    {
+      //console.log("T =", T, "I =", I, "type:", typeof I);
+      if ((I.name === 'fifth' || I.name === 'octave') 
+      && (T > 0) ) 
+      {
+        const val = solution.get('intervalCP', T); 
+        const cpNote_T = solution.get('cpNote', T);
+        const cpNote_T1 = solution.get('cpNote', T - 1);
+        const cfNote_T = solution.get('cf', T);
+        const cfNote_T1 = solution.get('cf', T - 1);
+        const movement = (cpNote_T - cpNote_T1) * (cfNote_T - cfNote_T1);
+        console.log(`cpNote at T=${T} is ${cpNote_T}, cpNote at T=${T-1} is ${cpNote_T1}, cfNote at T=${T} is ${cfNote_T}, cfNote at T=${T-1} is ${cfNote_T1}.`);
+        if ((movement > 0)
+        && (val > 1) ) // if both voices move in the same direction and there is a jump in CP
+        {
+          const leapval = solution.has('leap', T); 
+          console.log(`Failed test: Direct ${I.name} at T=${T} where intervalCP is ${val} and leap check is ${leapval}.`);
+          return false;
+        }
+        console.log(`Movement not in same direction, moving on.`);
+      }
+    }
+  console.log("Passed test: No direct fifths or octaves after jumps in the same direction");
+  return true;
+}
+
+
+
 // main test function that runs all tests on a solution
 
 function evaluateSolution(solution)
@@ -252,8 +312,9 @@ function evaluateSolution(solution)
      && check_validCPmove(solution)
      && check_consecutive_large_leaps(solution)
      && check_more_than_3_leaps(solution)
-     //&& check 
-    // && add more checks here as needed
+     && check_direct_fifth_and_octave(solution)
+     //  
+     // && add more checks here as needed
   )
   {
     return true;
