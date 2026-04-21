@@ -1,0 +1,35 @@
+#builtin STRING_CONCAT concat
+#builtin NAT_SUCC suc
+
+# Song "parser", where song N is song[N..]
+
+# Mary had a little lamb
+# song 0 "agfgaaagggaCC".
+# song 0 "agfgaaafgggfaCCf".
+
+# row, row, row your boat
+# song 0 "cccdeedefg".
+# song 0 "ccccccccdeeeeedeefgggggg".
+
+# Twinkle twinkle little star
+ttls 0 is "ccggaagcffeeddcc". 
+ttls 1 is "ggffeedc".
+song 0 (concat (ttls 0) (ttls 1) (ttls 1) (ttls 0)).
+
+note "c" 0.
+note "d" 1.
+note "e" 2.
+note "f" 3.
+note "g" 4.
+note "a" 5.
+note "b" 6.
+note "C" 7.
+note "D" 8.
+note "E" 9.
+note "F" 10.
+note "G" 11.
+note "A" 12.
+note "B" 13.
+
+song (suc N) SRest :- song N S, (concat Note SRest) is S, note Note NoteNum.
+cf N is NoteNum :- song N S, (concat Note _) is S, note Note NoteNum.

@@ -21,8 +21,15 @@ console.log("------")
 console.log(inputCf);
 
 // then concat that parsed input to the solver text as "together.du"
-let solverText = fs.readFileSync("counterpoint58.du", {encoding:"utf8"});
-solverText += inputCf;
+let solverText = fs.readFileSync("counterpoint_forbid.du", {encoding:"utf8"})
+    .split(/\r?\n/)
+    .join('\n');
+
+const normalizedInputCf = inputCf
+    .split(/\r?\n/)
+    .join('\n');
+
+solverText += '\n' + normalizedInputCf;  
 fs.writeFileSync('together.du', Buffer.from(solverText));
 
 
