@@ -7,6 +7,12 @@
 node .\divide_and_generate.mjs
 ```
 
+- Validation code is also updated in the "testing.mjs". It uses the input cf from the file "song_testing.du". To run the validation code:
+```
+node .\testing.mjs
+```
+
+
 
 # To Test It Out
 
