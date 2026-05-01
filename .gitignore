@@ -24,3 +24,4 @@
 *.glg
 *.pdf
 .direnv/
+node_modules/
