@@ -13,7 +13,7 @@
   
 - Dusa
   
-- Personal anecdote (feel free to delete)
+- Personal anecdote (feel free to delete) (Youyou likes it!)
   When Rose took a harmony class ~14 years ago, she instinctively wanted to generate 4-part chorales
   in Prolog but did not know how. Now we finally have the technology to implement harmony.
 
@@ -35,24 +35,42 @@
 
 5. Related Work
 
-- Cite human-computer co-creativity work?
+- Cite human-computer co-creativity work? (Any recommendations?)
 - Cite yourselves as appropriate
-- [Schottstaedt 1984](https://ccrma.stanford.edu/files/papers/stanm19.pdf)
+
+- Rule-based composition of counterpoint
+  - [Schottstaedt 1984](https://ccrma.stanford.edu/files/papers/stanm19.pdf)
   "Automatic Species Counterpoint"
-  - Implement Fux's rules in SAIL
-  - Represent importance of rules as penalties 
+    - Implement Fux's rules in SAIL
+    - Represent importance of rules as natural number penalties 
     (e.g. `TwoSkipsPenalty = 1`, `ParallelFifthPenalty = Infinity`)
 
-- [Yilmaz & Telatar 2010](https://www.sciencedirect.com/science/article/abs/pii/S0950705110000092)
-  "Note-against-note two-voice counterpoint by means of fuzzy logic"
-  - Distinguish between strict rules (e.g. parallel fifth) and fuzzy rules (e.g. leaps)
-  - Compare select-the-best method and likelihood-based selection (the latter promotes creativity)
+  - [Yilmaz & Telatar 2010](https://www.sciencedirect.com/science/article/abs/pii/S0950705110000092)
+   "Note-against-note two-voice counterpoint by means of fuzzy logic"
+    - Distinguish between strict rules (e.g. parallel fifth) and fuzzy rules (e.g. leaps)
+   - Compare select-the-best method and likelihood-based selection (the latter promotes creativity)
 
-- [Boenn et al. 2011](https://dl.acm.org/doi/abs/10.1017/S1471068410000530)
-  "Automatic Music Composition using Answer Set Programming"
-  - Develop the Anton system for melodic, harmonic, and rhythmic composition
-  - Implement Thakar’s counterpoint rules in AnsProlog
-  - Provide output in Csound & Lilypond formats
+  - [Boenn et al. 2011](https://dl.acm.org/doi/abs/10.1017/S1471068410000530)
+   "Automatic Music Composition using Answer Set Programming"
+    - Develop the Anton system for melodic, harmonic, and rhythmic composition
+    - Implement Thakar's counterpoint rules in AnsProlog
+    - Provide output in Csound & Lilypond formats
+
+  - [Szamozvancev & Gale 2017](https://dl.acm.org/doi/10.1145/3122955.3122964)
+    "Well-typed music does not sound wrong"
+    - Develop the Mezzo library in Haskell
+    - Implement counterpoint rules using GADTs, type families, and type class constraints
+  
+  - [Cong & Leo 2019](https://dl.acm.org/doi/10.1145/3331543.3342578)
+    "Demo: counterpoint by construction"
+    - Develop the MusicTools library in Agda
+    - Implement counterpoint rules as a dependent inductive type
+
+  - [Cong 2023](https://dl.acm.org/doi/10.1145/3609023.3609804)
+    "Weighted Refinement Types for Counterpoint Composition"
+    - Implement counterpoint rules as weigted refinement types
+    - Represent importance as integer weights 
+      (e.g. dissonant<sub>-∞</sub>, contrary<sub>50</sub>)
 
 6. Conclusion and Future Work
 - Weighted + prioritized constraints
