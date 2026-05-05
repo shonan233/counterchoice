@@ -1,7 +1,16 @@
 .solution {
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  gap: 0.25rem;
+  display: flex;
+  align-content: space-between;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  font-family: monospace;
+}
+
+.id {
+  display: inline-block;
+  min-width: 3ch;
+  text-align: right;
 }
 
 .solutionNotes {
@@ -9,4 +18,12 @@
   list-style: none;
   flex-direction: row;
   gap: 0.25rem;
+}
+
+.solution > button {
+  margin: 0.5rem;
+}
+
+.playButton {
+  width: 10ch;
 }

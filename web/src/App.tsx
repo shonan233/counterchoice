@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NOTES, type Note, type WorkerMessage } from "./util";
 import Solution from "./Solution";
+import style from "./App.module.css";
 
 export default function App() {
   const [input, setInput] = useState("");
@@ -14,10 +15,9 @@ export default function App() {
     workerRef.current = null;
   };
 
-  const stop = () => {
-    terminateWorker();
-    setDone(true);
-  };
+  const cf = [...input.replaceAll(/\s+/g, "")].map(
+    (note) => NOTES.indexOf(note) as Note,
+  );
 
   useEffect(() => {
     console.debug("client: starting worker");
@@ -28,9 +28,7 @@ export default function App() {
 
     worker.postMessage({
       type: "input",
-      payload: [...input.replaceAll(/\s+/g, "")].map(
-        (note) => NOTES.indexOf(note) as Note,
-      ),
+      payload: cf,
     } satisfies WorkerMessage);
 
     worker.addEventListener("message", (e: MessageEvent<WorkerMessage>) => {
@@ -52,7 +50,7 @@ export default function App() {
     <>
       <h1>CounterChoice Composer</h1>
 
-      <div>
+      <div className={`${style.controls}`}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
         <textarea
           name="cf"
@@ -69,7 +67,14 @@ export default function App() {
             }
           }}
         />
-        <button type="button" title="Stop" onClick={stop}>
+        <button
+          type="button"
+          title="Stop"
+          onClick={() => {
+            terminateWorker();
+            setDone(true);
+          }}
+        >
           Stop
         </button>
       </div>
@@ -77,10 +82,10 @@ export default function App() {
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}
 
-      <ul>
-        {solutions.map((soln, i) => (
+      <ul className={`${style.solutions}`}>
+        {solutions.map((cp, i) => (
           <li key={i}>
-            <Solution id={i + 1} notes={soln} />
+            <Solution id={i + 1} cf={cf} notes={cp} />
           </li>
         ))}
       </ul>
