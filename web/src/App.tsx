@@ -44,7 +44,7 @@ export default function App() {
     });
 
     return terminateWorker;
-  }, [input]);
+  }, [input, cf]);
 
   return (
     <>
