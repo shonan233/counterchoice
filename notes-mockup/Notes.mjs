@@ -71,6 +71,21 @@ const BEAT_STROKE = "#cccccc";
 //stroke style for measure line:
 const MEASURE_STROKE = "#bbbbbb";
 
+//drawing style for notes (per instrument):
+const INSTRUMENT_STYLE = {
+	"cf": {fill:'#eb8', stroke:'#888'},
+	"cp": {fill:'#ef0', stroke:'#aaa'},
+};
+const INSTRUMENT_STYLE_DEFAULT = {fill:'#eee', stroke:'#999'};
+
+function noteStyle(note) {
+	if (note.instrument in INSTRUMENT_STYLE) {
+		return INSTRUMENT_STYLE[note.instrument];
+	} else {
+		return INSTRUMENT_STYLE_DEFAULT;
+	}
+}
+
 export default class Notes {
 	constructor(elt) {
 		if (typeof elt !== "object") {
@@ -124,10 +139,10 @@ export default class Notes {
 
 		//register event handlers:
 		elt.addEventListener('mousedown', (evt) => {
-			this.mousedown(evt);
+			this.setMouse(evt);
 		});
 		elt.addEventListener('mouseup', (evt) => {
-			this.mouseup(evt);
+			this.setMouse(evt);
 		});
 		elt.addEventListener('mousemove', (evt) => {
 			this.setMouse(evt);
@@ -185,7 +200,7 @@ export default class Notes {
 		return (beat - this.view.beatMin) / (this.view.beatMax - this.view.beatMin) * this.canvas.width;
 	}
 	xToBeat(x) {
-		return x / this.canvas.width * (this.view.beatMax - this.view.beatMin) + this.beatMin;
+		return x / this.canvas.width * (this.view.beatMax - this.view.beatMin) + this.view.beatMin;
 	}
 	pitchToY(pitch) {
 		const height = this.canvas.height;
@@ -196,6 +211,31 @@ export default class Notes {
 		return (height - y) / height * (this.view.pitchMax - this.view.pitchMin) + this.view.pitchMin;
 	}
 
+	updateOver() {
+		const mouse = this.mouse;
+
+		delete mouse.overNote;
+		delete mouse.overPitch;
+		delete mouse.overBeat;
+
+		if (!(isFinite(mouse.x) && isFinite(mouse.y))) return;
+
+		mouse.overPitch = Math.floor(this.yToPitch(mouse.y));
+		mouse.overBeat = Math.floor(this.xToBeat(mouse.x));
+
+		for (const note of this.notes) {
+			let x0 = this.beatToX(note.start);
+			let x1 = this.beatToX(note.start + note.duration);
+			let y0 = this.pitchToY(note.pitch + 1);
+			let y1 = this.pitchToY(note.pitch);
+
+			if (x0 <= mouse.x && mouse.x <= x1
+			 && y0 <= mouse.y && mouse.y <= y1) {
+				mouse.overNote = note;
+			}
+		}
+	}
+
 	redraw() {
 		{ //make sure canvas pixels are the same size as display pixels:
 			const style = getComputedStyle(this.canvas);
@@ -204,6 +244,10 @@ export default class Notes {
 			this.canvas.height = Math.round(devicePixelRatio * parseFloat(style.height));
 		}
 
+		//update what the mouse is over:
+		this.updateOver();
+
+		const mouse = this.mouse;
 		const ctx = this.ctx;
 		const width = this.canvas.width;
 		const height = this.canvas.height;
@@ -243,6 +287,23 @@ export default class Notes {
 			ctx.stroke();
 		}
 
+		{ //highlight beat/measure
+			if ('overPitch' in mouse) {
+				const y0 = this.pitchToY(mouse.overPitch+1);
+				const y1 = this.pitchToY(mouse.overPitch);
+				ctx.fillStyle = '#ff02';
+				ctx.fillRect(0,y0, width,y1-y0);
+			}
+			/* time alignment is not so tricky, so don't bother with this highlight:
+			if ('overBeat' in mouse) {
+				const x0 = this.beatToX(mouse.overBeat);
+				const x1 = this.beatToX(mouse.overBeat+1);
+				ctx.fillStyle = '#ff02';
+				ctx.fillRect(x0,0, x1-x0,height);
+			}
+			*/
+		}
+
 		{ //beat / measure lines:
 			const min = Math.ceil( this.view.beatMin );
 			const max = Math.floor( this.view.beatMax );
@@ -268,18 +329,47 @@ export default class Notes {
 				}
 			}
 			ctx.strokeStyle = MEASURE_STROKE;
-			ctx.lineWidth =2 * px;
+			ctx.lineWidth = 2*px;
 			ctx.stroke();
-
 		}
 
-		if (this.mouse) { //mouse cursor (DEBUG)
+		//the notes themselves:
+		for (const note of this.notes) {
+			const x0 = this.beatToX(note.start);
+			const x1 = this.beatToX(note.start + note.duration);
+			const y0 = this.pitchToY(note.pitch + 1);
+			const y1 = this.pitchToY(note.pitch);
+
+			const ns = noteStyle(note);
+
+			ctx.fillStyle = ns.fill;
+			ctx.fillRect(x0,y0, x1-x0, y1-y0);
+
+			ctx.strokeStyle = ns.stroke;
+			ctx.lineWidth = 2*px;
+			ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+		}
+
+		//note highlight:
+		if ('overNote' in mouse) {
+			const note = mouse.overNote;
+			const x0 = this.beatToX(note.start);
+			const x1 = this.beatToX(note.start + note.duration);
+			const y0 = this.pitchToY(note.pitch + 1);
+			const y1 = this.pitchToY(note.pitch);
+
+			ctx.strokeStyle = '#ff0';
+			ctx.lineWidth = 2*px;
+			ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+		}
+
+		if (isFinite(mouse.x) && isFinite(mouse.y)) { //mouse cursor (DEBUG)
 			ctx.beginPath();
-			ctx.moveTo(this.mouse.x - 10, this.mouse.y - 10);
-			ctx.lineTo(this.mouse.x + 10, this.mouse.y + 10);
-			ctx.moveTo(this.mouse.x - 10, this.mouse.y + 10);
-			ctx.lineTo(this.mouse.x + 10, this.mouse.y - 10);
-			ctx.strokeWidth = px;
+			ctx.moveTo(mouse.x - 10, mouse.y - 10);
+			ctx.lineTo(mouse.x + 10, mouse.y + 10);
+			ctx.moveTo(mouse.x - 10, mouse.y + 10);
+			ctx.lineTo(mouse.x + 10, mouse.y - 10);
+			ctx.lineWidth = px;
 			ctx.strokeStyle = "#000";
 			ctx.stroke();
 		}
