@@ -4,46 +4,6 @@
  *
  */
 
-// Each note has an:
-// instrument (arbitrary value),
-// start (in beats),
-// pitch (midi note #),
-// and duration (in beats)
-export class Note {
-	constructor(instrument, start, pitch, duration = 1) {
-		//(no constraints on instrument)
-
-		//start must be a number:
-		if (typeof start !== "number") {
-			throw new Error(`Note's start should be a number, got '${typeof start}'.`);
-		}
-		//could probably also constrain to be finite, but let's not get too picky.
-
-		//pitch should be a midi note #:
-		// (at some point, should probably also parse textual note values)
-		if (typeof pitch !== "number") {
-			throw new Error(`Note cannot be constructed from value of type '${typeof pitch}'.`);
-		}
-		if (pitch !== Math.round(pitch) || pitch < 0 || pitch > 127) {
-			throw new Error(`Number ${pitch} is not a midi note number (integer, [0,127]).`);
-		}
-
-		//duration must be a non-negative number:
-		if (typeof duration !== "number") {
-			throw new Error(`Note's duration should be a number, got '${typeof duration}'.`);
-		}
-		if (!isFinite(duration) || duration < 0) {
-			throw new Error(`Note's duration should be non-negative (got '${duration}').`);
-		}
-
-		//parameters look valid; construct the note:
-		this.instrument = instrument;
-		this.start = start;
-		this.pitch = pitch;
-		this.duration = duration;
-	}
-}
-
 //fill styles used for note lane backgrounds:
 const WHITE_KEY_FILL = "#f0f0f0";
 const BLACK_KEY_FILL = "#e0e0e0";
@@ -106,38 +66,73 @@ export default class Notes {
 			willReadFrequently:false,
 		});
 
-		//actual data: (internally as midi note numbers)
-		this.bpm = 120; //disco :-)
-		this.measureBeats = 4;
-		this.notes = [
-			new Note("cf", 0, 48, 1),
-			new Note("cf", 1, 50, 1),
-			new Note("cf", 2, 52, 1),
-			new Note("cf", 3, 53, 1),
-			new Note("cf", 4, 55, 1),
-			new Note("cf", 5, 57, 1),
-			new Note("cf", 6, 59, 1),
-			new Note("cf", 7, 60, 1),
+		//This is editing a grid of notes. The grid axes are steps (horizontal) and pitches (vertical):
+
+		//steps of the pattern, with indices, measure labels, and maybe someday durations:
+		this.steps = [
+			{ index:0, measure:0 },
+			{ index:1, measure:0 },
+			{ index:2, measure:0 },
+			{ index:3, measure:0 },
+			{ index:4, measure:1 },
+			{ index:5, measure:1 },
+			{ index:6, measure:1 },
+			{ index:7, measure:1 },
 		];
 
-		//view bounds:
-		this.view = {
-			//horizontal axis, in beats:
-			beatMin:0,
-			beatMax:8,
-			//vertical axis, in pitches (midi note #'s)
-			pitchMin:48,
-			pitchMax:48 + 12*2,
-			//NOTE: vertical axis might be non-linear if doing scale elision.
+		//allowed pitches, with displayed names and midi note #'s:
+		this.pitches = [
+			{name:"C2", midi:48},
+			{name:"D2", midi:50},
+			{name:"E2", midi:52},
+			{name:"F2", midi:53},
+			{name:"G2", midi:55},
+			{name:"A2", midi:57},
+			{name:"B2", midi:59},
+			{name:"C3", midi:60},
+			{name:"D3", midi:62},
+			{name:"E3", midi:64},
+			{name:"F3", midi:65},
+			{name:"G3", midi:67},
+			{name:"A3", midi:69},
+			{name:"B3", midi:71},
+			{name:"C4", midi:72},
+		];
+
+		//the primary representation of the information in the grid is a rectangular bitfield.
+		//the cell corresponding to step s and pitch p is:
+		// this.grid[ s * this.pitches.length + p ]
+		this.grid = new Uint8Array(this.steps.length * this.pitches.length);
+
+		//there are two instruments, each of which uses certain bits of the grid bitfield:
+		this.instruments = {
+			"cf":{
+				noteBit:(1<<0), //play this note (at most one per step)
+				positiveBit:(1<<1), //show only patterns with 
+				negativeBit:(1<<2), //don't show patterns with this note
+				possibleBit:(1<<3), //display this cell as appearing in *some* possible pattern
+				//drawing style:
+				fill:'#eb8', stroke:'#888',
+			},
+			"cp":{
+				noteBit:(1<<4),
+				positiveBit:(1<<5),
+				negativeBit:(1<<6),
+				possibleBit:(1<<7),
+				//drawing style:
+				fill:'#ef0', stroke:'#aaa',
+			},
 		};
+
+		//some example data:
+		this.setNotes("cf", [ "C2", "D2", "E2", "F2", "G2", "A2", "B2", "C3" ]);
 
 		//mouse position and hover info:
 		this.mouse = {
 			x:NaN,
 			y:NaN,
-			//overBeat (when inside the canavs)
+			//overStep (when inside the canavs)
 			//overPitch (when inside the canvas)
-			//overNote (when over a note)
 		};
 
 		//register event handlers:
@@ -178,7 +173,94 @@ export default class Notes {
 		this.redraw();
 
 		window.NOTES = this; //DEBUG
+
+		//Testing:
+		//console.log(this.getNotes("cf", {format:"name"})); //DEBUG
+		//console.log(this.getNotes("cf", {format:"midi"})); //DEBUG
 	}
+
+	//------ public interface -----
+	//set the notes played by an instrument to a given array.
+	//the array must not be longer than this.steps.
+	//each array entry must be:
+	// - null / undefined (no note is played on this step)
+	// - a midi note number that appears in this.pitches
+	// - a note name string that appears in this.pitches
+	setNotes(instrument, notes) {
+		if (!(instrument in this.instruments)) {
+			throw new Error(`Cannot set notes for instrument '${instrument}', this instrument does not exist.`);
+		}
+		if (notes.length > this.steps.length) {
+			throw new Error(`Trying to set ${notes.length}, but only have ${this.steps.length} steps.`);
+		}
+
+		const toPitch = (n) => {
+			switch(typeof n) {
+				case "undefined":
+					return -1; //index that doesn't exist in pitches
+				case "number":
+					for (let p = 0; p < this.pitches.length; ++p) {
+						if (this.pitches[p].midi === n) return p;
+					}
+					throw new Error(`Midi note number ${n} not found in pitches array.`);
+				case "string":
+					for (let p = 0; p < this.pitches.length; ++p) {
+						if (this.pitches[p].name === n) return p;
+					}
+					throw new Error(`Pitch with name ${n} not found in pitches array.`);
+				default:
+					throw new Error(`Don't know how to look up note of type ${typeof n}.`);
+			}
+		};
+
+		const bit = this.instruments[instrument].noteBit;
+
+		for (let s = 0; s < this.steps.length; ++s) {
+			const tp = toPitch(notes[s]);
+			for (let p = 0; p < this.pitches.length; ++p) {
+				if (p === tp) {
+					this.grid[s * this.pitches.length + p] |= bit;
+				} else {
+					this.grid[s * this.pitches.length + p] &= ~bit;
+				}
+			}
+		}
+
+	}
+
+	//get the notes selected for an instrument as an array.
+	//array entries will be midi note numbers (format:midi) or note name strings (format:name) from the pitches array
+	getNotes(instrument, {format} = {format:"midi"}) {
+		if (!(instrument in this.instruments)) {
+			throw new Error(`Cannot set notes for instrument '${instrument}', this instrument does not exist.`);
+		}
+		let fromPitch;
+		if (format === "midi") {
+			fromPitch = (p) => this.pitches[p].midi;
+		} else if (format === "name") {
+			fromPitch = (p) => this.pitches[p].name;
+		} else {
+			throw new Error(`Cannot extract notes in unknown format '${format}'.`);
+		}
+
+		const bit = this.instruments[instrument].noteBit;
+
+		const out = [];
+		for (let s = 0; s < this.steps.length; ++s) {
+			let note = null;
+			for (let p = 0; p < this.pitches.length; ++p) {
+				if (this.grid[s * this.pitches.length + p] & bit) {
+					note = fromPitch(p);
+				}
+			}
+			out.push(note);
+		}
+		return out;
+	}
+
+
+
+	//------ internals ------
 
 	setMouse(evt) {
 		const rect = this.canvas.getBoundingClientRect();
@@ -212,23 +294,28 @@ export default class Notes {
 
 		this.updateOver();
 
-		let note;
-		let remove;
-		if ('overNote' in mouse) {
-			note = mouse.overNote;
-			remove = true; //remove if no movement
-		} else {
-			note = new Note("cf", mouse.overBeat, mouse.overPitch, 1);
-			this.notes.push(note);
-			remove = false; //never remove if just created
-		}
+		//nothing to lift:
+		if (!('overStep' in mouse && 'overPitch' in mouse)) return;
+
+		const idx = mouse.overStep * this.pitches.length + mouse.overPitch;
+
+		//TODO: idea of current instrument for editing
+		const bit = this.instruments["cf"].noteBit;
+
 		this.lifted = {
-			note,
-			newStart:note.start, newPitch:note.pitch,
-			dBeat:note.start - this.xToBeat(this.mouse.x),
-			dPitch:note.pitch - this.yToPitch(this.mouse.y),
-			remove,
+			//current lifted note location:
+			step:mouse.overStep,
+			pitch:mouse.overPitch,
+			//offset from (fractional) step/pitch mouse position to note origin:
+			dStep:mouse.overStep - this.xToStep(this.mouse.x),
+			dPitch:mouse.overPitch - this.yToPitch(this.mouse.y),
+			bit, //bit to set on drop
+			remove:((bit & this.grid[idx]) !== 0), //mark stitches that already exist and don't get moved for removal
 		};
+
+		//remove lifted note from the grid: (if it existed)
+		this.grid[idx] &= ~bit;
+
 		this.requestRedraw();
 
 		// event handlers to deal with the rest of the drag
@@ -243,12 +330,12 @@ export default class Notes {
 
 			this.setMouse(evt);
 
-			const newStart = Math.round( this.xToBeat(this.mouse.x) + this.lifted.dBeat );
+			const newStep = Math.round( this.xToStep(this.mouse.x) + this.lifted.dStep );
 			const newPitch = Math.round( this.yToPitch(this.mouse.y) + this.lifted.dPitch );
 
-			if (newStart !== this.lifted.newStart || newPitch !== this.lifted.newPitch) {
-				this.lifted.newStart = newStart;
-				this.lifted.newPitch = newPitch;
+			if (newStep !== this.lifted.step || newPitch !== this.lifted.pitch) {
+				this.lifted.step = newStep;
+				this.lifted.pitch = newPitch;
 				this.lifted.remove = false; //if moved, don't delete
 				this.updateOver();
 				this.requestRedraw(); //<-- likely redundant because setMouse will call if mouse moved
@@ -260,31 +347,22 @@ export default class Notes {
 			if (evt.button !== 0) return;
 
 			if ('lifted' in this) {
-				//if moved outside the visible (or valid) region, mark note for removal:
-				if (!this.liftHasValidDrop()) {
-					this.lifted.remove = true;
-				}
-
-				//if note tagged for removal, remove it:
-				if (this.lifted.remove) {
-					const idx = this.notes.indexOf(this.lifted.note);
-					console.log(idx);
-					if (idx !== -1) {
-						this.notes.splice(idx, 1);
+				const lifted = this.lifted;
+				//if it isn't marked for removal and has a valid place in the grid...
+				if (!lifted.remove
+				 && 0 <= lifted.step && lifted.step < this.steps.length
+				 && 0 <= lifted.pitch && lifted.pitch < this.pitches.length) {
+					//...put it in the grid:
+					// (and cancel everything else in this column)
+					for (let p = 0; p < this.pitches.length; ++p) {
+						if (p === lifted.pitch) {
+							this.grid[lifted.step * this.pitches.length + p] |= lifted.bit;
+						} else {
+							this.grid[lifted.step * this.pitches.length + p] &= ~lifted.bit;
+						}
 					}
-				} else {
-					this.lifted.note.pitch = this.lifted.newPitch;
-					this.lifted.note.start = this.lifted.newStart;
-
-					//remove any other notes from same instrument with same start:
-					this.notes = this.notes.filter( (note) => {
-						return note.instrument !== this.lifted.note.instrument
-						 || note.start !== this.lifted.note.start
-						 || note === this.lifted.note;
-					});
 				}
 				delete this.lifted;
-				this.updateOver();
 				this.requestRedraw();
 			}
 
@@ -300,57 +378,37 @@ export default class Notes {
 		window.addEventListener('mousemove', moveListener);
 	}
 
-	liftHasValidDrop() {
-		if (!('lifted' in this)) return false;
-		const lifted = this.lifted;
-		const view = this.view;
-		//must be within view:
-		return view.beatMin < lifted.newStart + 1 && lifted.newStart < view.beatMax
-		    && view.pitchMin < lifted.newPitch + 1 && lifted.newPitch <view.pitchMax
-		//also must have valid values in general:
-		    && 0 <= lifted.newStart
-		    && 0 <= lifted.newPitch && lifted.newPitch <= 127;
-	}
-
 	//view transforms:
-	beatToX(beat) {
-		return (beat - this.view.beatMin) / (this.view.beatMax - this.view.beatMin) * this.canvas.width;
+	stepToX(step) {
+		return step / this.steps.length * this.canvas.width;
 	}
-	xToBeat(x) {
-		return x / this.canvas.width * (this.view.beatMax - this.view.beatMin) + this.view.beatMin;
+	xToStep(x) {
+		return x / this.canvas.width * this.steps.length;
 	}
 	pitchToY(pitch) {
 		const height = this.canvas.height;
-		return height - (pitch - this.view.pitchMin) / (this.view.pitchMax - this.view.pitchMin) * this.canvas.height;
+		return height - pitch / this.pitches.length * height;
 	}
 	yToPitch(y) {
 		const height = this.canvas.height;
-		return (height - y) / height * (this.view.pitchMax - this.view.pitchMin) + this.view.pitchMin;
+		return (height - y) / height * this.pitches.length;
 	}
 
 	updateOver() {
 		const mouse = this.mouse;
 
-		delete mouse.overNote;
 		delete mouse.overPitch;
-		delete mouse.overBeat;
+		delete mouse.overStep;
 
 		if (!(isFinite(mouse.x) && isFinite(mouse.y))) return;
 
-		mouse.overPitch = Math.floor(this.yToPitch(mouse.y));
-		mouse.overBeat = Math.floor(this.xToBeat(mouse.x));
+		const step = Math.floor(this.xToStep(mouse.x));
+		const pitch = Math.floor(this.yToPitch(mouse.y));
 
-		for (const note of this.notes) {
-			let x0 = this.beatToX(note.start);
-			let x1 = this.beatToX(note.start + note.duration);
-			let y0 = this.pitchToY(note.pitch + 1);
-			let y1 = this.pitchToY(note.pitch);
-
-			if (x0 <= mouse.x && mouse.x <= x1
-			 && y0 <= mouse.y && mouse.y <= y1) {
-				mouse.overNote = note;
-			}
-		}
+		//if (0 <= step && step < this.steps.length && 0 <= pitch && pitch < this.pitches.length) {
+		mouse.overStep = step;
+		mouse.overPitch = pitch;
+		//}
 	}
 
 	redraw() {
@@ -381,20 +439,17 @@ export default class Notes {
 		ctx.fillRect(0,0, width,height);
 
 		{ //note lanes:
-			const min = Math.floor(this.view.pitchMin);
-			const max = Math.floor(this.view.pitchMax);
-
 			//backgrounds:
-			for (let p = min; p <= max; p += 1) {
+			for (let p = 0; p < this.pitches.length; ++p) {
 				const y0 = this.pitchToY(p+1);
 				const y1 = this.pitchToY(p);
-				ctx.fillStyle = PITCH_FILL[p % PITCH_FILL.length];
+				ctx.fillStyle = PITCH_FILL[this.pitches[p].midi % PITCH_FILL.length];
 				ctx.fillRect(0,y0, width, (y1-y0));
 			}
 
 			//dividing lines:
 			ctx.beginPath();
-			for (let p = min; p <= max; p += 1) {
+			for (let p = 0; p <= this.pitches.length; ++p) {
 				const y = this.pitchToY(p);
 				ctx.moveTo(0,y);
 				ctx.lineTo(width,y);
@@ -421,14 +476,16 @@ export default class Notes {
 			*/
 		}
 
-		{ //beat / measure lines:
-			const min = Math.ceil( this.view.beatMin );
-			const max = Math.floor( this.view.beatMax );
+		{ //step / measure lines:
+			//helper to decide whether the division before step is a beat or measure line:
+			const measureLineBefore = (s) => {
+				return (s === 0 || s == this.steps.length || this.steps[s-1].measure !== this.steps[s].measure);
+			};
 			//beat lines:
 			ctx.beginPath();
-			for (let b = min; b <= max; b += 1) {
-				if (b % this.measureBeats !== 0) {
-					const x = this.beatToX(b);
+			for (let s = 0; s <= this.steps.length; ++s) {
+				if (!measureLineBefore(s)) {
+					const x = this.stepToX(s);
 					ctx.moveTo(x,0);
 					ctx.lineTo(x,height);
 				}
@@ -438,9 +495,9 @@ export default class Notes {
 			ctx.stroke();
 			//measure lines:
 			ctx.beginPath();
-			for (let b = min; b <= max; b += 1) {
-				if (b % this.measureBeats === 0) {
-					const x = this.beatToX(b);
+			for (let s = 0; s <= this.steps.length; ++s) {
+				if (measureLineBefore(s)) {
+					const x = this.stepToX(s);
 					ctx.moveTo(x,0);
 					ctx.lineTo(x,height);
 				}
@@ -451,48 +508,60 @@ export default class Notes {
 		}
 
 		//the notes themselves:
-		for (const note of this.notes) {
-			//draw lifted notes later:
-			if (this.lifted && this.lifted.note === note) continue;
+		for (let s = 0; s < this.steps.length; ++s) {
+			const x0 = this.stepToX(s);
+			const x1 = this.stepToX(s+1);
+			for (let p = 0; p < this.pitches.length; ++p) {
+				const bits = this.grid[s * this.pitches.length + p];
+				//list of instruments for which this is a played note:
+				let playing = [];
+				for (const instr of Object.values(this.instruments)) {
+					if (bits & instr.noteBit) {
+						playing.push(instr);
+					}
+				}
+				if (playing.length === 0) {
+					//no notes :-)
+				} else if (playing.length === 1) {
+					const y0 = this.pitchToY(p+1);
+					const y1 = this.pitchToY(p);
 
-			const x0 = this.beatToX(note.start);
-			const x1 = this.beatToX(note.start + note.duration);
-			const y0 = this.pitchToY(note.pitch + 1);
-			const y1 = this.pitchToY(note.pitch);
+					ctx.fillStyle = playing[0].fill;
+					ctx.fillRect(x0,y0, x1-x0, y1-y0);
 
-			const ns = noteStyle(note);
-
-			ctx.fillStyle = ns.fill;
-			ctx.fillRect(x0,y0, x1-x0, y1-y0);
-
-			ctx.strokeStyle = ns.stroke;
-			ctx.lineWidth = 2*px;
-			ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+					ctx.strokeStyle = playing[0].stroke;
+					ctx.lineWidth = 2*px;
+					ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+				} else if (playing.length === 2) {
+					//TODO
+				} else {
+					//TODO
+				}
+			}
 		}
 
 		if (this.lifted) {
-			const note = this.lifted.note;
-			if (this.liftHasValidDrop()) {
+			const lifted = this.lifted;
+			//if it's over a valid place in the grid, draw it:
+			if (0 <= lifted.step && lifted.step < this.steps.length
+			 && 0 <= lifted.pitch && lifted.pitch < this.pitches.length) {
 				//draw drop location
-				const x0 = this.beatToX(this.lifted.newStart);
-				const x1 = this.beatToX(this.lifted.newStart + note.duration);
-				const y0 = this.pitchToY(this.lifted.newPitch + 1);
-				const y1 = this.pitchToY(this.lifted.newPitch);
+				const x0 = this.stepToX(lifted.step);
+				const x1 = this.stepToX(lifted.step + 1);
+				const y0 = this.pitchToY(lifted.pitch + 1);
+				const y1 = this.pitchToY(lifted.pitch);
 
 				ctx.strokeStyle = "#000";
 				ctx.lineWidth = 2*px;
 				ctx.strokeRect(x0,y0, x1-x0, y1-y0);
 
 				//note cancellation:
-				for (const note2 of this.notes) {
-					if (note2 === note) continue;
-					if (note2.instrument !== note.instrument) continue;
-					if (note2.start !== this.lifted.newStart) continue;
+				for (let p = 0; p < this.pitches.length; ++p) {
+					//only mark other notes from the same instrument in the same column:
+					if (!(this.grid[lifted.step * this.pitches.length + p] & lifted.bit)) continue;
 
-					const x0 = this.beatToX(note2.start);
-					const x1 = this.beatToX(note2.start + note2.duration);
-					const y0 = this.pitchToY(note2.pitch + 1);
-					const y1 = this.pitchToY(note2.pitch);
+					const y0 = this.pitchToY(p + 1);
+					const y1 = this.pitchToY(p);
 
 					ctx.beginPath();
 					ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
@@ -505,12 +574,11 @@ export default class Notes {
 			}
 		} else {
 			//note highlight:
-			if ('overNote' in mouse) {
-				const note = mouse.overNote;
-				const x0 = this.beatToX(note.start);
-				const x1 = this.beatToX(note.start + note.duration);
-				const y0 = this.pitchToY(note.pitch + 1);
-				const y1 = this.pitchToY(note.pitch);
+			if (('overStep' in mouse) && ('overPitch' in mouse)) {
+				const x0 = this.stepToX(mouse.overStep);
+				const x1 = this.stepToX(mouse.overStep + 1);
+				const y0 = this.pitchToY(mouse.overPitch + 1);
+				const y1 = this.pitchToY(mouse.overPitch);
 
 				ctx.strokeStyle = '#ff0';
 				ctx.lineWidth = 2*px;
