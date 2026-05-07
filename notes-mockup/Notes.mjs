@@ -135,15 +135,25 @@ export default class Notes {
 		this.mouse = {
 			x:NaN,
 			y:NaN,
+			//overBeat (when inside the canavs)
+			//overPitch (when inside the canvas)
+			//overNote (when over a note)
 		};
 
 		//register event handlers:
 		elt.addEventListener('mousedown', (evt) => {
 			this.setMouse(evt);
+
+			const mouse = this.mouse;
+
+			if (evt.button === 0) {
+				this.startLift();
+			}
+			
+			evt.preventDefault();
+			return false;
 		});
-		elt.addEventListener('mouseup', (evt) => {
-			this.setMouse(evt);
-		});
+
 		elt.addEventListener('mousemove', (evt) => {
 			this.setMouse(evt);
 		});
@@ -153,6 +163,7 @@ export default class Notes {
 		elt.addEventListener('mouseleave', (evt) => {
 			this.mouse.x = NaN;
 			this.mouse.y = NaN;
+
 			this.requestRedraw();
 		});
 
@@ -193,6 +204,112 @@ export default class Notes {
 			this.mouse.y = y;
 			this.requestRedraw();
 		}
+	}
+
+	//[create and] lift (start moving) a note:
+	startLift() {
+		const mouse = this.mouse;
+
+		this.updateOver();
+
+		let note;
+		let remove;
+		if ('overNote' in mouse) {
+			note = mouse.overNote;
+			remove = true; //remove if no movement
+		} else {
+			note = new Note("cf", mouse.overBeat, mouse.overPitch, 1);
+			this.notes.push(note);
+			remove = false; //never remove if just created
+		}
+		this.lifted = {
+			note,
+			newStart:note.start, newPitch:note.pitch,
+			dBeat:note.start - this.xToBeat(this.mouse.x),
+			dPitch:note.pitch - this.yToPitch(this.mouse.y),
+			remove,
+		};
+		this.requestRedraw();
+
+		// event handlers to deal with the rest of the drag
+		// (installing on the window to deal with dragging outside the canvas)
+
+		const moveListener = (evt) => {
+			if (!('lifted' in this)) {
+				//should generally not happen since this handler will be removed on button lift.
+				//but, just in case:
+				return;
+			}
+
+			this.setMouse(evt);
+
+			const newStart = Math.round( this.xToBeat(this.mouse.x) + this.lifted.dBeat );
+			const newPitch = Math.round( this.yToPitch(this.mouse.y) + this.lifted.dPitch );
+
+			if (newStart !== this.lifted.newStart || newPitch !== this.lifted.newPitch) {
+				this.lifted.newStart = newStart;
+				this.lifted.newPitch = newPitch;
+				this.lifted.remove = false; //if moved, don't delete
+				this.updateOver();
+				this.requestRedraw(); //<-- likely redundant because setMouse will call if mouse moved
+			}
+		};
+
+		const upListener = (evt) => {
+			//only care about the main button being released:
+			if (evt.button !== 0) return;
+
+			if ('lifted' in this) {
+				//if moved outside the visible (or valid) region, mark note for removal:
+				if (!this.liftHasValidDrop()) {
+					this.lifted.remove = true;
+				}
+
+				//if note tagged for removal, remove it:
+				if (this.lifted.remove) {
+					const idx = this.notes.indexOf(this.lifted.note);
+					console.log(idx);
+					if (idx !== -1) {
+						this.notes.splice(idx, 1);
+					}
+				} else {
+					this.lifted.note.pitch = this.lifted.newPitch;
+					this.lifted.note.start = this.lifted.newStart;
+
+					//remove any other notes from same instrument with same start:
+					this.notes = this.notes.filter( (note) => {
+						return note.instrument !== this.lifted.note.instrument
+						 || note.start !== this.lifted.note.start
+						 || note === this.lifted.note;
+					});
+				}
+				delete this.lifted;
+				this.updateOver();
+				this.requestRedraw();
+			}
+
+			window.removeEventListener('mouseup', upListener);
+			window.removeEventListener('mousemove', moveListener);
+			evt.preventDefault();
+			return false;
+		};
+
+
+		//can't just use 'once' option for mouseup because multi-button mice exist :-/
+		window.addEventListener('mouseup', upListener);
+		window.addEventListener('mousemove', moveListener);
+	}
+
+	liftHasValidDrop() {
+		if (!('lifted' in this)) return false;
+		const lifted = this.lifted;
+		const view = this.view;
+		//must be within view:
+		return view.beatMin < lifted.newStart + 1 && lifted.newStart < view.beatMax
+		    && view.pitchMin < lifted.newPitch + 1 && lifted.newPitch <view.pitchMax
+		//also must have valid values in general:
+		    && 0 <= lifted.newStart
+		    && 0 <= lifted.newPitch && lifted.newPitch <= 127;
 	}
 
 	//view transforms:
@@ -335,6 +452,9 @@ export default class Notes {
 
 		//the notes themselves:
 		for (const note of this.notes) {
+			//draw lifted notes later:
+			if (this.lifted && this.lifted.note === note) continue;
+
 			const x0 = this.beatToX(note.start);
 			const x1 = this.beatToX(note.start + note.duration);
 			const y0 = this.pitchToY(note.pitch + 1);
@@ -350,17 +470,52 @@ export default class Notes {
 			ctx.strokeRect(x0,y0, x1-x0, y1-y0);
 		}
 
-		//note highlight:
-		if ('overNote' in mouse) {
-			const note = mouse.overNote;
-			const x0 = this.beatToX(note.start);
-			const x1 = this.beatToX(note.start + note.duration);
-			const y0 = this.pitchToY(note.pitch + 1);
-			const y1 = this.pitchToY(note.pitch);
+		if (this.lifted) {
+			const note = this.lifted.note;
+			if (this.liftHasValidDrop()) {
+				//draw drop location
+				const x0 = this.beatToX(this.lifted.newStart);
+				const x1 = this.beatToX(this.lifted.newStart + note.duration);
+				const y0 = this.pitchToY(this.lifted.newPitch + 1);
+				const y1 = this.pitchToY(this.lifted.newPitch);
 
-			ctx.strokeStyle = '#ff0';
-			ctx.lineWidth = 2*px;
-			ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+				ctx.strokeStyle = "#000";
+				ctx.lineWidth = 2*px;
+				ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+
+				//note cancellation:
+				for (const note2 of this.notes) {
+					if (note2 === note) continue;
+					if (note2.instrument !== note.instrument) continue;
+					if (note2.start !== this.lifted.newStart) continue;
+
+					const x0 = this.beatToX(note2.start);
+					const x1 = this.beatToX(note2.start + note2.duration);
+					const y0 = this.pitchToY(note2.pitch + 1);
+					const y1 = this.pitchToY(note2.pitch);
+
+					ctx.beginPath();
+					ctx.moveTo(x0,y0); ctx.lineTo(x1,y1);
+					ctx.moveTo(x0,y1); ctx.lineTo(x1,y0);
+
+					ctx.strokeStyle = "#000";
+					ctx.lineWidth = 2*px;
+					ctx.stroke();
+				}
+			}
+		} else {
+			//note highlight:
+			if ('overNote' in mouse) {
+				const note = mouse.overNote;
+				const x0 = this.beatToX(note.start);
+				const x1 = this.beatToX(note.start + note.duration);
+				const y0 = this.pitchToY(note.pitch + 1);
+				const y1 = this.pitchToY(note.pitch);
+
+				ctx.strokeStyle = '#ff0';
+				ctx.lineWidth = 2*px;
+				ctx.strokeRect(x0,y0, x1-x0, y1-y0);
+			}
 		}
 
 		if (isFinite(mouse.x) && isFinite(mouse.y)) { //mouse cursor (DEBUG)
