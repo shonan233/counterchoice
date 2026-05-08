@@ -17,23 +17,29 @@
   When Rose took a harmony class ~14 years ago, she instinctively wanted to generate 4-part chorales
   in Prolog but did not know how. Now we finally have the technology to implement harmony.
 
-3. Design and Implementation
-- CP->LP (Counterpoint to Logic Program)
-  - Deciding Interface / Problem Format
-  - Naive Algorithm: Translating Rules to Code
-  - Divide-and-Conquer
-  - Pruning Search Space (Yigit's recent developments)
+3. Dusa Implementation
+   -  Overview (figure, inputs/outputs)
+  - 3.1 Representation of music (notes, intervals, cf, cp, snippets of code)
+  - 3.2 Explain the rules
+    - 3.2.1 Rules related to Harmony
+    - 3.2.2 Rules related to Melody
+  - 3.3 Optimization
+    - 3.3.1 Refactoring (Dusa's features, judgeCP/forbid)
+    - 3.3.2 Alternative Approach: Divide-and-Conquer
+   
+      
+4. UI Implementation
 - LP-> UI
   - Identifying Design Goals
   - Wireframes
   - Components + Libraries Used
    
-4. Discussion
+5. Discussion
 - Is Dusa particularly good for harmony?
 - How much work, if any, does Dusa save? How much, if at all, does that matter?
 - Is Dusa debuggable? Optimizable?
 
-5. Related Work
+6. Related Work
 
 - Cite human-computer co-creativity work? (Any recommendations?)
 - Cite yourselves as appropriate
@@ -72,7 +78,7 @@
     - Represent importance as integer weights 
       (e.g. dissonant<sub>-∞</sub>, contrary<sub>50</sub>)
 
-6. Conclusion and Future Work
+7. Conclusion and Future Work
 - Weighted + prioritized constraints
 - 4 part chorale
 - Use procedurally generated music to do something that's impossible without procedural generation
