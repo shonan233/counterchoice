@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import { NOTES, type Note, type WorkerMessage } from "./util";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { NOTES, type Note } from "./util";
+import { solve } from "./dusa.service";
 import Solution from "./Solution";
 import Notes from "./Notes";
 import style from "./App.module.css";
@@ -9,43 +10,35 @@ export default function App() {
   const [done, setDone] = useState(true);
   const [solutions, setSolutions] = useState<Note[][]>([]);
   const [error, setError] = useState<unknown>(null);
-  const workerRef = useRef<Worker | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  const terminateWorker = () => {
-    workerRef.current?.terminate();
-    workerRef.current = null;
-  };
-
-  const cf = [...input.replaceAll(/\s+/g, "")].map(
-    (note) => NOTES.indexOf(note) as Note,
+  const cf = useMemo(
+    () =>
+      [...input.replaceAll(/\s+/g, "")].map(
+        (note) => NOTES.indexOf(note) as Note,
+      ),
+    [input],
   );
 
   useEffect(() => {
-    console.debug("client: starting worker");
-    const worker = new Worker(new URL("./dusa.worker.ts", import.meta.url), {
-      type: "module",
-    });
-    workerRef.current = worker;
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
 
-    worker.postMessage({
-      type: "input",
-      payload: cf,
-    } satisfies WorkerMessage);
-
-    worker.addEventListener("message", (e: MessageEvent<WorkerMessage>) => {
-      const data = e.data;
-      if (data.type === "solution") {
-        setSolutions((current) => [...current, data.payload.cp]);
-      } else if (data.type === "done") {
+    (async () => {
+      try {
+        for await (const sol of solve(cf, [], [], ctrl.signal)) {
+          setSolutions((current) => [...current, sol.cp]);
+        }
         setDone(true);
-      } else if (data.type === "error") {
-        setError(data);
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e);
         setDone(true);
       }
-    });
+    })();
 
-    return terminateWorker;
-  }, [input, cf]);
+    return () => ctrl.abort();
+  }, [cf]);
 
   return (
     <>
@@ -65,6 +58,7 @@ export default function App() {
             } else {
               setInput(value);
               setSolutions([]);
+              setError(null);
               setDone(false);
             }
           }}
@@ -73,7 +67,7 @@ export default function App() {
           type="button"
           title="Stop"
           onClick={() => {
-            terminateWorker();
+            abortRef.current?.abort();
             setDone(true);
           }}
         >
