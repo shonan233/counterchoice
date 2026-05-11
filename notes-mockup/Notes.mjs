@@ -31,21 +31,6 @@ const BEAT_STROKE = "#cccccc";
 //stroke style for measure line:
 const MEASURE_STROKE = "#bbbbbb";
 
-//drawing style for notes (per instrument):
-const INSTRUMENT_STYLE = {
-	"cf": {fill:'#eb8', stroke:'#888'},
-	"cp": {fill:'#ef0', stroke:'#aaa'},
-};
-const INSTRUMENT_STYLE_DEFAULT = {fill:'#eee', stroke:'#999'};
-
-function noteStyle(note) {
-	if (note.instrument in INSTRUMENT_STYLE) {
-		return INSTRUMENT_STYLE[note.instrument];
-	} else {
-		return INSTRUMENT_STYLE_DEFAULT;
-	}
-}
-
 export default class Notes {
 	constructor(elt) {
 		if (typeof elt !== "object") {
