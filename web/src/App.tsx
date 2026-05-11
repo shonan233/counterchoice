@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { NOTES, type Note, type WorkerMessage } from "./util";
 import Solution from "./Solution";
+import Notes from "./Notes";
 import style from "./App.module.css";
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
 
       <div className={`${style.controls}`}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
+        <Notes className={style.mainNotes} />
         <textarea
           name="cf"
           placeholder={NOTES}

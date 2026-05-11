@@ -8,3 +8,10 @@
 .solutions {
   list-style: none;
 }
+
+.mainNotes {
+  width:calc(min(80vw, 60vh * 4));
+  height:auto;
+  aspect-ratio: 4 / 1;
+  margin: 0 auto;
+}
