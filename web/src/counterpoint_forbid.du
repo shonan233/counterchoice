@@ -223,16 +223,16 @@ at T 1 is N :- cpNote T is N.
 
 
 
-#forbid forbidden cadenceNotThirdUnison, cadenceNotThirdUnison _ _.
-#forbid forbidden cadenceNotSixthOctave, cadenceNotSixthOctave _ _.
-#forbid forbidden directOctave, directOctave _ _.
-#forbid forbidden directFifth, directFifth _ _.
-#forbid forbidden parallelOctave, parallelOctave _ _.
-#forbid forbidden parallelFifth, parallelFifth _ _.
-#forbid forbidden invalidCPMovement, invalidCPMovement _ _.
-#forbid forbidden twoLargeLeapsUp, twoLargeLeapsUp _ _.
-#forbid forbidden twoLargeLeapsDown, twoLargeLeapsDown _ _.
-#forbid forbidden fourLeaps, fourLeaps _ _.
+#forbid forbidden "cadenceNotThirdUnison", cadenceNotThirdUnison _ _.
+#forbid forbidden "cadenceNotSixthOctave", cadenceNotSixthOctave _ _.
+#forbid forbidden "directOctave", directOctave _ _.
+#forbid forbidden "directFifth", directFifth _ _.
+#forbid forbidden "parallelOctave", parallelOctave _ _.
+#forbid forbidden "parallelFifth", parallelFifth _ _.
+#forbid forbidden "invalidCPMovement", invalidCPMovement _ _.
+#forbid forbidden "twoLargeLeapsUp", twoLargeLeapsUp _ _.
+#forbid forbidden "twoLargeLeapsDown", twoLargeLeapsDown _ _.
+#forbid forbidden "fourLeaps", fourLeaps _ _.
 
 
 # "User" "inputs" cantus firmus voice here

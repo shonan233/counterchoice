@@ -14,7 +14,7 @@ function solve({
 }: (WorkerInput & { type: "solve" })["payload"]) {
   console.debug("solving with notes", cf);
   const dusaInput =
-    rules.map((r) => `forbidden ${r}.`).join("\n") +
+    rules.map((r) => `forbidden "${r}".`).join("\n") +
     "\n" +
     cf.map((n, i) => `cf ${i} is ${n}.`).join("\n") +
     "\n" +
