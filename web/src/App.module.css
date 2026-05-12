@@ -10,8 +10,21 @@
 }
 
 .mainNotes {
-  width:calc(min(80vw, 60vh * 4));
-  height:auto;
+  width: calc(min(80vw, 60vh * 4));
+  height: auto;
   aspect-ratio: 4 / 1;
   margin: 0 auto;
+}
+
+.ruleCheckbox {
+  font-family: monospace;
+}
+
+.rules {
+  list-style: none;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
 }

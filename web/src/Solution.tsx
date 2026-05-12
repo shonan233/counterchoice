@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import { noteToLetter, type Note } from "./util";
+import { type Note } from "./util";
 import { mapNote, tracksToMidi } from "./midi";
 import { claimPlayback, releasePlayback, getSampler } from "./piano";
 import style from "./Solution.module.css";
+import Notes from "./Notes";
 
 export interface SolutionProps {
   cf: Note[];
-  notes: Note[];
+  cp: Note[];
   id: number;
 }
 
@@ -16,8 +17,8 @@ const BEAT = 60 / BPM;
 
 type Status = "stopped" | "playing" | "paused";
 
-export default function Solution({ cf, notes, id }: SolutionProps) {
-  const midi = tracksToMidi(cf, notes);
+export default function Solution({ cf, cp, id }: SolutionProps) {
+  const midi = tracksToMidi(cf, cp);
 
   const [status, setStatus] = useState<Status>("stopped");
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export default function Solution({ cf, notes, id }: SolutionProps) {
     transport.seconds = pauseOffsetRef.current;
 
     let maxNoteEnd = 0;
-    for (const track of [cf, notes]) {
+    for (const track of [cf, cp]) {
       for (let t = 0; t < track.length; t++) {
         if (track[t] === undefined) continue;
         const noteStart = t * BEAT;
@@ -116,11 +117,7 @@ export default function Solution({ cf, notes, id }: SolutionProps) {
       <span>
         Solution <span className={style.id}>{id}:</span>
       </span>
-      <ol className={`${style.solutionNotes}`}>
-        {notes.map((note, i) => (
-          <li key={i}>{noteToLetter(note)}</li>
-        ))}
-      </ol>
+      <Notes cf={cf} cp={cp} className={style.notes} />
       <button
         type="button"
         className={style.playButton}

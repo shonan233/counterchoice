@@ -1,16 +1,14 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { PITCHES, type Note } from "./util";
+
+// stable reference for a "no notes" default prop:
+const EMPTY_NOTES: Note[] = [];
 
 // data that is actually being edited:
 interface Step {
   index: number; // index of the step (not actually used in Notes component)
   measure: unknown; // label of the measure (only strict-equality compared)
 }
-
-interface Pitch {
-  name: string; // name, a string
-  midi: number; // midi note number, 0 <= midi <= 127
-}
-
 interface Instrument {
   noteBit: number; // play this note (at most one per step)
   positiveBit: number; // show only patterns with some note in this set
@@ -80,24 +78,6 @@ const STEPS: Step[] = [
   { index: 7, measure: 1 },
 ];
 
-const PITCHES: Pitch[] = [
-  { name: "C2", midi: 48 },
-  { name: "D2", midi: 50 },
-  { name: "E2", midi: 52 },
-  { name: "F2", midi: 53 },
-  { name: "G2", midi: 55 },
-  { name: "A2", midi: 57 },
-  { name: "B2", midi: 59 },
-  { name: "C3", midi: 60 },
-  { name: "D3", midi: 62 },
-  { name: "E3", midi: 64 },
-  { name: "F3", midi: 65 },
-  { name: "G3", midi: 67 },
-  { name: "A3", midi: 69 },
-  { name: "B3", midi: 71 },
-  { name: "C4", midi: 72 },
-];
-
 const INSTRUMENTS: Record<string, Instrument> = {
   cf: {
     noteBit: 1 << 0,
@@ -117,66 +97,37 @@ const INSTRUMENTS: Record<string, Instrument> = {
   },
 };
 
-const INITIAL_GRID: Uint8Array = setNotesInGrid(
-  new Uint8Array(STEPS.length * PITCHES.length),
-  "cf",
-  ["C2", "D2", "E2", "F2", "G2", "A2", "B2", "C3"],
-);
-
-// set the notes played by an instrument to a given array.
-// the array must not be longer than STEPS.
-// each entry is null/undefined (no note), a midi note number, or a pitch name.
-// returns a copy of the input grid with the notes set.
-function setNotesInGrid(
-  gridIn: Uint8Array,
-  instrument: string,
-  notes: (string | number | undefined)[],
-): Uint8Array {
-  if (!(instrument in INSTRUMENTS)) {
-    throw new Error(
-      `Cannot set notes for instrument '${instrument}', this instrument does not exist.`,
-    );
-  }
-  if (notes.length > STEPS.length) {
-    throw new Error(
-      `Trying to set ${notes.length} notes, but only have ${STEPS.length} steps.`,
-    );
-  }
-
-  const toPitch = (n: string | number | undefined) => {
-    switch (typeof n) {
-      case "undefined":
-        return -1; // index that doesn't exist in PITCHES
-      case "number":
-        for (let p = 0; p < PITCHES.length; ++p) {
-          if (PITCHES[p].midi === n) return p;
-        }
-        throw new Error(`Midi note number ${n} not found in pitches array.`);
-      case "string":
-        for (let p = 0; p < PITCHES.length; ++p) {
-          if (PITCHES[p].name === n) return p;
-        }
-        throw new Error(`Pitch with name ${n} not found in pitches array.`);
-      default:
-        throw new Error(`Don't know how to look up note of type ${typeof n}.`);
-    }
-  };
-
-  const grid = new Uint8Array(gridIn);
-  const bit = INSTRUMENTS[instrument].noteBit;
-
+// build a grid from cf and cp index arrays.
+// out-of-range indices (e.g. -1 for "no note") are ignored.
+function buildGrid(cf: Note[], cp: Note[]): Uint8Array {
+  const grid = new Uint8Array(STEPS.length * PITCHES.length);
+  const cfBit = INSTRUMENTS.cf.noteBit;
+  const cpBit = INSTRUMENTS.cp.noteBit;
   for (let s = 0; s < STEPS.length; ++s) {
-    const tp = toPitch(notes[s]);
+    if (s < cf.length && cf[s] >= 0 && cf[s] < PITCHES.length) {
+      grid[s * PITCHES.length + cf[s]] |= cfBit;
+    }
+    if (s < cp.length && cp[s] >= 0 && cp[s] < PITCHES.length) {
+      grid[s * PITCHES.length + cp[s]] |= cpBit;
+    }
+  }
+  return grid;
+}
+
+// extract cf pitch indices from a grid; -1 means "no note in this step".
+function gridToCf(grid: Uint8Array): Note[] {
+  const bit = INSTRUMENTS.cf.noteBit;
+  const out: Note[] = [];
+  for (let s = 0; s < STEPS.length; ++s) {
+    let idx: Note = -1 as Note;
     for (let p = 0; p < PITCHES.length; ++p) {
-      if (p === tp) {
-        grid[s * PITCHES.length + p] |= bit;
-      } else {
-        grid[s * PITCHES.length + p] &= ~bit;
+      if (grid[s * PITCHES.length + p] & bit) {
+        idx = p as Note;
       }
     }
+    out.push(idx);
   }
-
-  return grid;
+  return out;
 }
 
 // coordinate helpers (step/pitch <-> canvas device pixels)
@@ -363,9 +314,37 @@ function drawGridNotes(
         ctx.lineWidth = 2 * px;
         ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
       } else if (playing.length === 2) {
-        // TODO
-      } else {
-        // TODO
+        const y0 = pitchToY(height, p + 1);
+        const y1 = pitchToY(height, p);
+        const w = x1 - x0;
+        const h = y1 - y0;
+
+        // base fill in the first instrument's color
+        ctx.fillStyle = playing[0].fill;
+        ctx.fillRect(x0, y0, w, h);
+
+        // overlay 45 degree stripes of the second color, clipped to the cell
+        const stripeW = 6 * px;
+        const period = stripeW * 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(x0, y0, w, h);
+        ctx.clip();
+        ctx.fillStyle = playing[1].fill;
+        for (let off = -h; off < w + stripeW; off += period) {
+          ctx.beginPath();
+          ctx.moveTo(x0 + off, y0);
+          ctx.lineTo(x0 + off + stripeW, y0);
+          ctx.lineTo(x0 + off + stripeW + h, y1);
+          ctx.lineTo(x0 + off + h, y1);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+
+        ctx.strokeStyle = playing[0].stroke;
+        ctx.lineWidth = 2 * px;
+        ctx.strokeRect(x0, y0, w, h);
       }
     }
   }
@@ -482,19 +461,30 @@ function redraw(
 
 export interface NotesProps {
   className?: string;
+  cf?: Note[];
+  cp?: Note[];
+  editable?: boolean;
+  onChange?: (updated: Note[]) => void;
 }
 
-export default function Notes({ className }: NotesProps) {
-  const [grid, setGrid] = useState<Uint8Array>(INITIAL_GRID);
-
+export default function Notes({
+  className,
+  cf = EMPTY_NOTES,
+  cp = EMPTY_NOTES,
+  editable,
+  onChange,
+}: NotesProps) {
+  const grid = buildGrid(cf, cp);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const uiRef = useRef<UIState>({ mouse: { x: NaN, y: NaN } });
 
-  // mirror `grid` into a ref so the canvas effect (empty deps) and the drag
-  // handlers always read the latest grid without re-running.
+  // mirror `grid` into a ref so the drag handlers always read the latest grid
+  // without forcing the canvas-setup effect to re-run.
   const gridRef = useRef(grid);
+  const requestRedrawRef = useRef(() => {});
   useEffect(() => {
     gridRef.current = grid;
+    requestRedrawRef.current();
   }, [grid]);
 
   useEffect(() => {
@@ -522,6 +512,7 @@ export default function Notes({ className }: NotesProps) {
         pending = false;
       });
     };
+    requestRedrawRef.current = requestRedraw;
 
     // force initial redraw, don't wait for repaint
     redraw(canvas, ctx, uiRef.current, gridRef.current);
@@ -537,7 +528,8 @@ export default function Notes({ className }: NotesProps) {
       const idx = ui.mouse.step * PITCHES.length + ui.mouse.pitch;
 
       // TODO: idea of current instrument for editing
-      const bit = INSTRUMENTS["cf"].noteBit;
+      const instrument = "cf";
+      const bit = INSTRUMENTS[instrument].noteBit;
 
       ui.lifted = {
         // current lifted note location:
@@ -610,7 +602,7 @@ export default function Notes({ className }: NotesProps) {
             }
           }
 
-          setGrid(newGrid);
+          onChange?.(gridToCf(newGrid));
           ui.lifted = undefined;
           requestRedraw();
         }
@@ -636,15 +628,21 @@ export default function Notes({ className }: NotesProps) {
 
     const observer = new ResizeObserver(requestRedraw);
     observer.observe(canvas);
-    canvas.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("mousedown", onMouseDown);
+
+    if (editable) {
+      canvas.addEventListener("mousemove", onMouseMove);
+      canvas.addEventListener("mousedown", onMouseDown);
+    }
 
     return () => {
+      requestRedrawRef.current = () => {};
       observer.disconnect();
-      canvas.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("mousedown", onMouseDown);
+      if (editable) {
+        canvas.removeEventListener("mousemove", onMouseMove);
+        canvas.removeEventListener("mousedown", onMouseDown);
+      }
     };
-  }, []);
+  }, [editable, onChange]);
 
   return <canvas ref={canvasRef} className={className} />;
 }

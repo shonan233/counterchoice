@@ -5,6 +5,7 @@
   align-items: center;
   gap: 1rem;
   font-family: monospace;
+  margin: 0.5rem;
 }
 
 .id {
@@ -26,4 +27,9 @@
 
 .playButton {
   width: 10ch;
+}
+
+.notes {
+  width: 30vw;
+  aspect-ratio: 4 / 1;
 }

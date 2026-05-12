@@ -1,44 +1,67 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { NOTES, type Note } from "./util";
+import { useEffect, useRef, useState } from "react";
+import { RULES, type Rule, type Note } from "./util";
 import { solve } from "./dusa.service";
 import Solution from "./Solution";
 import Notes from "./Notes";
 import style from "./App.module.css";
 
+const SOLUTION_LIMIT = 10;
+
 export default function App() {
-  const [input, setInput] = useState("");
+  const [cf, setCf] = useState<Note[]>([]);
   const [done, setDone] = useState(true);
   const [solutions, setSolutions] = useState<Note[][]>([]);
   const [error, setError] = useState<unknown>(null);
+  const [enabledRules, setEnabledRules] = useState<Record<Rule, boolean>>(
+    Object.fromEntries(RULES.map((r) => [r, true])) as Record<Rule, boolean>,
+  );
   const abortRef = useRef<AbortController | null>(null);
 
-  const cf = useMemo(
-    () =>
-      [...input.replaceAll(/\s+/g, "")].map(
-        (note) => NOTES.indexOf(note) as Note,
-      ),
-    [input],
-  );
+  // invalidate solutions when their input (cf or enabledRules) changes
+  const [solutionsCf, setSolutionsCf] = useState(cf);
+  const [solutionsRules, setSolutionsRules] = useState(enabledRules);
+  if (cf !== solutionsCf || enabledRules !== solutionsRules) {
+    setSolutionsCf(cf);
+    setSolutionsRules(enabledRules);
+    setSolutions([]);
+  }
 
   useEffect(() => {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
     (async () => {
+      if (cf.some((n) => n < 0 || n > 14)) return;
+      if (cf.length === 0) return;
+
       try {
-        for await (const sol of solve(cf, [], [], ctrl.signal)) {
+        for await (const sol of solve(
+          cf,
+          [],
+          Object.entries(enabledRules)
+            .filter(([, on]) => on)
+            .map(([name]) => name as Rule),
+          ctrl.signal,
+        )) {
           setSolutions((current) => [...current, sol.cp]);
         }
         setDone(true);
       } catch (e) {
         if (e instanceof DOMException && e.name === "AbortError") return;
+        console.error(e);
         setError(e);
         setDone(true);
       }
     })();
 
     return () => ctrl.abort();
-  }, [cf]);
+  }, [cf, enabledRules]);
+
+  useEffect(() => {
+    if (solutions.length >= SOLUTION_LIMIT) {
+      abortRef.current?.abort();
+    }
+  }, [solutions]);
 
   return (
     <>
@@ -46,23 +69,27 @@ export default function App() {
 
       <div className={`${style.controls}`}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
-        <Notes className={style.mainNotes} />
-        <textarea
-          name="cf"
-          placeholder={NOTES}
-          value={input}
-          onChange={(e) => {
-            const value = e.target.value;
-            if (!new RegExp(`^[${NOTES}\\s]*$`).test(value)) {
-              e.preventDefault();
-            } else {
-              setInput(value);
-              setSolutions([]);
-              setError(null);
-              setDone(false);
-            }
-          }}
-        />
+        <Notes className={style.mainNotes} cf={cf} editable onChange={setCf} />
+
+        <ul className={style.rules}>
+          {RULES.map((r) => (
+            <li key={r}>
+              <span className={style.ruleCheckbox}>
+                <input
+                  name={r}
+                  type="checkbox"
+                  checked={enabledRules[r]}
+                  title={r}
+                  onChange={(e) =>
+                    setEnabledRules({ ...enabledRules, [r]: e.target.checked })
+                  }
+                />
+                <label htmlFor={r}>{r}</label>
+              </span>
+            </li>
+          ))}
+        </ul>
+
         <button
           type="button"
           title="Stop"
@@ -81,7 +108,7 @@ export default function App() {
       <ul className={`${style.solutions}`}>
         {solutions.map((cp, i) => (
           <li key={i}>
-            <Solution id={i + 1} cf={cf} notes={cp} />
+            <Solution id={i + 1} cf={cf} cp={cp} />
           </li>
         ))}
       </ul>

@@ -5,7 +5,7 @@ type Solution = Extract<WorkerResponse, { type: "solution" }>["payload"];
 export async function* solve(
   cf: Note[],
   frozen: Freeze[],
-  rules: Rule[],
+  rules: readonly Rule[],
   signal?: AbortSignal,
 ): AsyncGenerator<Solution, void, void> {
   signal?.throwIfAborted();
