@@ -69,7 +69,16 @@ export default function App() {
 
       <div className={`${style.controls}`}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
-        <Notes className={style.mainNotes} cf={cf} editable onChange={setCf} />
+        <Notes
+          className={style.mainNotes}
+          cf={cf}
+          editable
+          onChange={(newCf) => {
+            if (newCf.every((n) => n <= 7)) {
+              setCf(newCf);
+            }
+          }}
+        />
 
         <ul className={style.rules}>
           {RULES.map((r) => (
