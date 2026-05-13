@@ -92,8 +92,8 @@ const INSTRUMENTS: Record<string, Instrument> = {
     positiveBit: 1 << 5,
     negativeBit: 1 << 6,
     possibleBit: 1 << 7,
-    fill: "#ef0",
-    stroke: "#aaa",
+    fill: "#57b0f4",
+    stroke: "#888",
   },
 };
 
