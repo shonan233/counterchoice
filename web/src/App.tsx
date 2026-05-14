@@ -30,6 +30,8 @@ export default function App() {
     setSolutions([]);
   }
 
+  const program = solverInput && solverInput.solver + solverInput.dusaInput;
+
   useEffect(() => {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
@@ -73,7 +75,7 @@ export default function App() {
     <>
       <h1>CounterChoice Composer</h1>
 
-      <div className={`${style.controls}`}>
+      <section className={`${style.controls}`}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
         <Notes
           className={style.mainNotes}
@@ -115,20 +117,27 @@ export default function App() {
         >
           Stop
         </button>
-      </div>
 
-      {solverInput && (
-        <span>
-          Open this program in{" "}
-          <a
-            rel="noreferrer"
-            target="_blank"
-            href={`https://dusa.rocks/#program=${encodeURIComponent(solverInput.solver + solverInput.dusaInput)}`}
-          >
-            dusa.rocks
-          </a>
-        </span>
-      )}
+        {program && (
+          <span>
+            Open this program in{" "}
+            <a
+              rel="noreferrer"
+              target="_blank"
+              href={`https://dusa.rocks/#program=${program}`}
+            >
+              dusa.rocks
+            </a>
+            , or{" "}
+            <button
+              type="button"
+              onClick={() => navigator.clipboard.writeText(program)}
+            >
+              copy
+            </button>
+          </span>
+        )}
+      </section>
 
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}
@@ -136,7 +145,7 @@ export default function App() {
       <ul className={`${style.solutions}`}>
         {solutions.map((sol, i) => (
           <li key={i}>
-            <Solution id={i + 1} cf={cf} cp={sol.cp} />
+            <Solution id={i + 1} {...sol} />
           </li>
         ))}
       </ul>

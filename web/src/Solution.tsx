@@ -1,14 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import * as Tone from "tone";
-import { type Note } from "./util";
+import { factToString, type Note } from "./util";
 import { mapNote, tracksToMidi } from "./midi";
 import { claimPlayback, releasePlayback, getSampler } from "./piano";
 import style from "./Solution.module.css";
 import Notes from "./Notes";
+import type { Fact } from "dusa";
 
 export interface SolutionProps {
   cf: Note[];
   cp: Note[];
+  facts: Fact[];
   id: number;
 }
 
@@ -17,20 +19,23 @@ const BEAT = 60 / BPM;
 
 type Status = "stopped" | "playing" | "paused";
 
-export default function Solution({ cf, cp, id }: SolutionProps) {
+export default function Solution({ cf, cp, id, facts }: SolutionProps) {
   const midi = tracksToMidi(cf, cp);
 
   const [status, setStatus] = useState<Status>("stopped");
   const [loading, setLoading] = useState(false);
   const pauseOffsetRef = useRef(0);
 
-  useEffect(() => {
-    return () => {
+  const factsStrings = facts.map(factToString);
+
+  useEffect(
+    () => () => {
       releasePlayback();
       Tone.getTransport().stop();
       Tone.getTransport().cancel();
-    };
-  }, []);
+    },
+    [],
+  );
 
   const reset = () => {
     pauseOffsetRef.current = 0;
@@ -113,22 +118,42 @@ export default function Solution({ cf, cp, id }: SolutionProps) {
         : "Play";
 
   return (
-    <div className={`${style.solution}`}>
-      <span>
-        Solution <span className={style.id}>{id}:</span>
-      </span>
-      <Notes cf={cf} cp={cp} className={style.notes} />
-      <button
-        type="button"
-        className={style.playButton}
-        onClick={handlePlayPause}
-        disabled={loading}
-      >
-        {label}
-      </button>
-      <button type="button" onClick={handleDownload}>
-        Download
-      </button>
+    <div>
+      <div className={`${style.solution}`}>
+        <span>
+          Solution <span className={style.id}>{id}:</span>
+        </span>
+        <Notes cf={cf} cp={cp} className={style.notes} />
+        <button
+          type="button"
+          className={style.playButton}
+          onClick={handlePlayPause}
+          disabled={loading}
+        >
+          {label}
+        </button>
+        <button type="button" onClick={handleDownload}>
+          Download
+        </button>
+      </div>
+      <details>
+        <summary>
+          See generated facts
+          <button
+            type="button"
+            onClick={() =>
+              navigator.clipboard.writeText(factsStrings.join("\n"))
+            }
+          >
+            copy
+          </button>
+        </summary>
+        <ul>
+          {factsStrings.map((s) => (
+            <li>{s}</li>
+          ))}
+        </ul>
+      </details>
     </div>
   );
 }

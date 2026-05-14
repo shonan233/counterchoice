@@ -1,4 +1,4 @@
-import type { Fact } from "dusa";
+import type { Fact, Term } from "dusa";
 
 export type Note = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 12 | 13 | 14;
 
@@ -73,3 +73,32 @@ export const PITCHES: Pitch[] = [
   { name: "B3", midi: 71 },
   { name: "C4", midi: 72 },
 ];
+
+function termToString(term: Term): string {
+  if (term === null) {
+    return "()";
+  } else if (typeof term === "string") {
+    return term;
+  } else if (typeof term === "boolean" || typeof term === "number") {
+    return String(term);
+  } else if (term.name !== null) {
+    if (term.args === undefined) {
+      return term.name;
+    } else {
+      return `(${term.name} ${term.args.map(termToString).join(" ")})`;
+    }
+  } else throw new TypeError("expected proper Dusa Term");
+}
+
+export function factToString(fact: Fact): string {
+  let preValue: string;
+  if (fact.args.length === 0) {
+    preValue = fact.name;
+  } else {
+    preValue = `${fact.name} ${fact.args.map(termToString).join(" ")}`;
+  }
+
+  if (fact.value !== undefined) {
+    return `${preValue} is ${termToString(fact.value)}.`;
+  } else return `${preValue}.`;
+}
