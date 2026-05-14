@@ -28,6 +28,7 @@ export default function App() {
     setSolutionsCf(cf);
     setSolutionsRules(enabledRules);
     setSolutions([]);
+    setSolverInput(null);
   }
 
   const program = solverInput && solverInput.solver + solverInput.dusaInput;
