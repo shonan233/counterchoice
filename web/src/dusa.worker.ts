@@ -31,6 +31,8 @@ function solve({
     const track = (t: number) =>
       results
         .filter(([, track]) => track === t)
+        // dusa.lookup doesn't provide these in order
+        .sort(([a], [b]) => (a as number) - (b as number))
         .map(([, , note]) => note as Note);
     const cf = track(0);
     const cp = track(1);
