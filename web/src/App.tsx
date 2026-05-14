@@ -142,7 +142,7 @@ export default function App() {
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}
 
-      <ul className={`${style.solutions}`}>
+      <ul className={style.solutions}>
         {solutions.map((sol, i) => (
           <li key={i}>
             <Solution id={i + 1} {...sol} />
