@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v6
       
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Setup Node
         uses: actions/setup-node@v6
@@ -40,4 +40,4 @@ jobs:
     steps:
       - name: Deoploy to pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
