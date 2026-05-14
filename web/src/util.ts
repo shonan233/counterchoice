@@ -28,14 +28,17 @@ export type WorkerInput = {
   };
 };
 
+export type WorkerSolution = {
+  cf: Note[];
+  cp: Note[];
+  violations: Fact[];
+  facts: Fact[];
+};
+
 export type WorkerResponse =
   | {
       type: "solution";
-      payload: {
-        cf: Note[];
-        cp: Note[];
-        violations: Fact[];
-      };
+      payload: WorkerSolution;
     }
   | { type: "done" }
   | { type: "error"; payload: unknown };

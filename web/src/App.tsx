@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { RULES, type Rule, type Note } from "./util";
+import { RULES, type Rule, type Note, type WorkerSolution } from "./util";
 import { solve } from "./dusa.service";
 import Solution from "./Solution";
 import Notes from "./Notes";
@@ -10,7 +10,7 @@ const SOLUTION_LIMIT = 10;
 export default function App() {
   const [cf, setCf] = useState<Note[]>([]);
   const [done, setDone] = useState(true);
-  const [solutions, setSolutions] = useState<Note[][]>([]);
+  const [solutions, setSolutions] = useState<WorkerSolution[]>([]);
   const [error, setError] = useState<unknown>(null);
   const [enabledRules, setEnabledRules] = useState<Record<Rule, boolean>>(
     Object.fromEntries(RULES.map((r) => [r, true])) as Record<Rule, boolean>,
@@ -43,7 +43,7 @@ export default function App() {
             .map(([name]) => name as Rule),
           ctrl.signal,
         )) {
-          setSolutions((current) => [...current, sol.cp]);
+          setSolutions((current) => [...current, sol]);
         }
         setDone(true);
       } catch (e) {
@@ -115,9 +115,9 @@ export default function App() {
       {error && <pre>{String(error)}</pre>}
 
       <ul className={`${style.solutions}`}>
-        {solutions.map((cp, i) => (
+        {solutions.map((sol, i) => (
           <li key={i}>
-            <Solution id={i + 1} cf={cf} cp={cp} />
+            <Solution id={i + 1} cf={cf} cp={sol.cp} />
           </li>
         ))}
       </ul>

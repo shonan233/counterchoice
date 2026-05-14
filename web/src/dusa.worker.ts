@@ -36,7 +36,12 @@ function solve({
 
     postMessage({
       type: "solution",
-      payload: { cf, cp, violations },
+      payload: {
+        cf,
+        cp,
+        violations,
+        facts: solution.facts(),
+      },
     } satisfies WorkerResponse);
   }
 
