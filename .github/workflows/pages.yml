@@ -32,12 +32,15 @@ jobs:
           path: web/dist/
 
   deploy:
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.pages_url }}
     runs-on: ubuntu-latest
     needs: build
     steps:
-      - name: Deoploy to pages
+      - name: Deploy to pages
         id: deployment
         uses: actions/deploy-pages@v5
