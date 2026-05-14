@@ -5,7 +5,7 @@ import Solution from "./Solution";
 import Notes from "./Notes";
 import style from "./App.module.css";
 
-const SOLUTION_LIMIT = 10;
+const SOLUTION_LIMIT = 9;
 
 export default function App() {
   const [cf, setCf] = useState<Note[]>([]);
@@ -51,8 +51,11 @@ export default function App() {
           ctrl.signal,
         );
         setSolverInput({ solver, dusaInput });
+        let count = 0;
         for await (const sol of solutions) {
           setSolutions((current) => [...current, sol]);
+          count += 1;
+          if (count >= SOLUTION_LIMIT) break;
         }
         setDone(true);
       } catch (e) {
@@ -65,12 +68,6 @@ export default function App() {
 
     return () => ctrl.abort();
   }, [cf, enabledRules]);
-
-  useEffect(() => {
-    if (solutions.length >= SOLUTION_LIMIT) {
-      abortRef.current?.abort();
-    }
-  }, [solutions]);
 
   return (
     <>
@@ -108,36 +105,37 @@ export default function App() {
           ))}
         </ul>
 
-        <button
-          type="button"
-          title="Stop"
-          onClick={() => {
-            abortRef.current?.abort();
-            setDone(true);
-          }}
-        >
-          Stop
-        </button>
-
-        {program && (
-          <span>
-            Open this program in{" "}
-            <a
-              rel="noreferrer"
-              target="_blank"
-              href={`https://dusa.rocks/#program=${program}`}
-            >
-              dusa.rocks
-            </a>
-            , or{" "}
-            <button
-              type="button"
-              onClick={() => navigator.clipboard.writeText(program)}
-            >
-              copy
-            </button>
-          </span>
-        )}
+        <div className={style.underNotes}>
+          <button
+            type="button"
+            title="Stop"
+            onClick={() => {
+              abortRef.current?.abort();
+              setDone(true);
+            }}
+          >
+            Stop
+          </button>
+          {program && (
+            <span>
+              Open this program in{" "}
+              <a
+                rel="noreferrer"
+                target="_blank"
+                href={`https://dusa.rocks/#program=${program}`}
+              >
+                dusa.rocks
+              </a>
+              , or{" "}
+              <button
+                type="button"
+                onClick={() => navigator.clipboard.writeText(program)}
+              >
+                copy
+              </button>
+            </span>
+          )}
+        </div>
       </section>
 
       {!done && <p>Working ...</p>}

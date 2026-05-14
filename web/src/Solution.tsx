@@ -118,28 +118,29 @@ export default function Solution({ cf, cp, id, facts }: SolutionProps) {
         : "Play";
 
   return (
-    <div>
-      <div className={`${style.solution}`}>
-        <span>
+    <div className={style.solution}>
+      <div>
+        <p>
           Solution <span className={style.id}>{id}:</span>
-        </span>
+        </p>
         <Notes cf={cf} cp={cp} className={style.notes} />
-        <button
-          type="button"
-          className={style.playButton}
-          onClick={handlePlayPause}
-          disabled={loading}
-        >
-          {label}
-        </button>
-        <button type="button" onClick={handleDownload}>
-          Download
-        </button>
       </div>
+      <button
+        type="button"
+        className={style.playButton}
+        onClick={handlePlayPause}
+        disabled={loading}
+      >
+        {label}
+      </button>
+      <button type="button" onClick={handleDownload}>
+        Download
+      </button>
       <details>
         <summary>
           See generated facts
           <button
+            className={style.factCopy}
             type="button"
             onClick={() =>
               navigator.clipboard.writeText(factsStrings.join("\n"))

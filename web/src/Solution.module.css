@@ -1,17 +1,10 @@
 .solution {
-  display: flex;
-  align-content: space-between;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
   font-family: monospace;
   margin: 0.5rem;
 }
 
-.id {
-  display: inline-block;
-  min-width: 3ch;
-  text-align: right;
+.solution > div:nth-child(1) {
+  display: block;
 }
 
 .solutionNotes {
@@ -23,13 +16,14 @@
 
 .solution > button {
   margin: 0.5rem;
-}
-
-.playButton {
-  width: 10ch;
+  min-width: 10ch;
 }
 
 .notes {
   width: 30vw;
   aspect-ratio: 4 / 1;
+}
+
+.factCopy {
+  margin: 0 0.25rem;
 }
