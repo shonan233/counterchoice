@@ -1,0 +1,43 @@
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'web/**/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+
+      - name: Build
+        run: |
+          cd web/
+          npm ci
+          npm run build
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: web/dist/
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.pages_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deoploy to pages
+        id: deployment
+        uses: actions/deploy-pages@v4
