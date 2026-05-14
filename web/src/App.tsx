@@ -75,7 +75,7 @@ export default function App() {
     <>
       <h1>CounterChoice Composer</h1>
 
-      <section className={`${style.controls}`}>
+      <section className={style.controls}>
         <label htmlFor="cf">Enter your cantus firmus:</label>
         <Notes
           className={style.mainNotes}
