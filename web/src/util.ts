@@ -37,6 +37,10 @@ export type WorkerSolution = {
 
 export type WorkerResponse =
   | {
+      type: "input";
+      payload: { solver: string; dusaInput: string };
+    }
+  | {
       type: "solution";
       payload: WorkerSolution;
     }

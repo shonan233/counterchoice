@@ -12,6 +12,10 @@ export default function App() {
   const [done, setDone] = useState(true);
   const [solutions, setSolutions] = useState<WorkerSolution[]>([]);
   const [error, setError] = useState<unknown>(null);
+  const [solverInput, setSolverInput] = useState<{
+    solver: string;
+    dusaInput: string;
+  } | null>(null);
   const [enabledRules, setEnabledRules] = useState<Record<Rule, boolean>>(
     Object.fromEntries(RULES.map((r) => [r, true])) as Record<Rule, boolean>,
   );
@@ -35,14 +39,16 @@ export default function App() {
       if (cf.length === 0) return;
 
       try {
-        for await (const sol of solve(
+        const { solver, dusaInput, solutions } = await solve(
           cf,
           [],
           Object.entries(enabledRules)
             .filter(([, on]) => on)
             .map(([name]) => name as Rule),
           ctrl.signal,
-        )) {
+        );
+        setSolverInput({ solver, dusaInput });
+        for await (const sol of solutions) {
           setSolutions((current) => [...current, sol]);
         }
         setDone(true);
@@ -110,6 +116,19 @@ export default function App() {
           Stop
         </button>
       </div>
+
+      {solverInput && (
+        <span>
+          Open this program in{" "}
+          <a
+            rel="noreferrer"
+            target="_blank"
+            href={`https://dusa.rocks/#program=${encodeURIComponent(solverInput.solver + solverInput.dusaInput)}`}
+          >
+            dusa.rocks
+          </a>
+        </span>
+      )}
 
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}

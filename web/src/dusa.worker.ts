@@ -21,6 +21,11 @@ function solve({
     frozen.map(([idx, n]) => `at 1 ${idx} is ${n}.`).join("\n") +
     `\nlength is ${cf.length}.\n`;
 
+  postMessage({
+    type: "input",
+    payload: { solver: SOLVER, dusaInput },
+  } satisfies WorkerResponse);
+
   for (const solution of new Dusa(SOLVER + dusaInput)) {
     const results = [...solution.lookup("at")];
     const track = (t: number) =>
