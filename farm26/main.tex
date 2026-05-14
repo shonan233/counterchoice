@@ -1,4 +1,4 @@
-\documentclass[sigplan,screen]{acmart}
+\documentclass[sigplan,review,screen]{acmart}
 
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
@@ -53,58 +53,19 @@
 
 \maketitle
 
-\section{Introduction}
-\label{sec:introduction}
-Modern logic programming languages offer a promising foundation for procedural content generation with diverse applications across the arts.
-However, a foundation is just that, a starting point from which something more is built.
-If  works of art are implemented directly as logic programs, the potential artists are limited to those comfortable programming in avant-garde languages.
-Formal logic may be as elegant as a violin and as flexible as a paintbrush, but it is a radically different user interface from both, and developing widely-usable procedural content generation tools requires building widely-understandable user interfaces atop our chosen software foundations.
-Only then can we support \emph{casual creators} who use computational creativity tools to find inherent joy rather than achieve expertise.
+\input{introduction}
 
-This paper presents \emph{CounterChoice}, a case study in developing user-facing procedural content generation tools using modern logic programming languages.
-CounterChoice is a graphical tool for generating first-species counterpoint compositions: the user enters the first voice of the composition (the \emph{cantus firmus}) and a logic program automatically synthesizes a second voice to complete the composition (the \emph{counterpoint}).
-CounterChoice is implemented in the finite-choice logic programming language \emph{Dusa}.
-Developed in response to the limitations of answer-set programming (ASP), Dusa is a promising language for constraint-intensive search-based generative problems like counterpoint composition, but Dusa is so new that existing applications are limited.
-Counterpoint synthesis is an appropriate case study because the search is large enough to pose a computational challenge and the problem constraints are sophisticated but widely agreed-upon since counterpoint is a standard topic in formal music theory education.																				
-Counterpoint and other harmony exercises in general are so clearly constraint-solving problems that one of the authors daydreamed ${\approx}14$ years ago of solving her Harmony homework in Prolog. Years later, logic programming technology has advanced to make this daydream possible.
+% \input{background}
 
-A single case study holds multiple lessons when viewed through different lenses.
-The CounterChoice case study seeks to address the following research questions (RQs):
-\begin{itemize}
-\item How do the rules of counterpoint translate to the rules of logic? 
-\item How much of the tool implementation can readily be performed in Dusa, and how much must be performed in traditional languages?
-\item How might the tooling of Dusa and similar languages be revised to simplify the development of user-facing generation tools?
-\end{itemize}
-Answering RQ1 helps us understand the adequacy of logic for formalizing harmony, i.e., whether music theory relies on rules that cannot be formalized.
-Answering RQ2 helps us characterize the extent of productivity gains associated with specialized languages.
-Answering RQ3 provides formative feedback to guide continuing development of the Dusa language and promote future application development.
+% \input{dusa-implementation}
 
-We outline the structure of the paper.
-The foundations of counterpoint are presented in Section \ref{sec:background}.
-The Dusa implementation of the CounterChoice backend is presented in Section \ref{sec:dusa-implementation}.
-The implementation of the frontend as a  web application is presented in Section \ref{sec:ui-implementation}.
-Lessons and implications are discussed in Section \ref{sec:discussion}.
-Related work is discussed in Section \ref{sec:related-work}.
-The paper concludes and outlines future work in Section \ref{sec:conclusion}.
+% \input{ui-implementation}
 
-\section{Background}
-\label{sec:background}
+% \input{discussion}
 
-\section{Dusa Implementation}
-\label{sec:dusa-implementation}
+\input{related-work}
 
-\section{UI Implementation}
-\label{sec:ui-implementation}
-
-\section{Discussion}
-\label{sec:discussion}
-
-\section{Related Work}
-\label{sec:related-work}
-
-\section{Conclusion and Future Work}
-\label{sec:conclusion}
-
+% \input{conclusion}
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{counterchoice}
