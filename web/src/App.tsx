@@ -158,6 +158,11 @@ export default function App() {
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}
 
+      {done &&
+        cf.length !== 0 &&
+        cf.every((n) => n !== null) &&
+        solutions.length === 0 && <p>No solutions found.</p>}
+
       <ul className={style.solutions}>
         {solutions.map((sol, i) => (
           <li key={i}>
