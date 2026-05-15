@@ -166,7 +166,11 @@ export default function App() {
       <ul className={style.solutions}>
         {solutions.map((sol, i) => (
           <li key={i}>
-            <Solution id={i + 1} {...sol} />
+            <Solution
+              id={i + 1}
+              onSelect={() => setFrozenCp(sol.cp)}
+              {...sol}
+            />
           </li>
         ))}
       </ul>

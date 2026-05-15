@@ -12,6 +12,7 @@ export interface SolutionProps {
   cp: Note[];
   facts: Fact[];
   id: number;
+  onSelect: () => void;
 }
 
 const BPM = 120;
@@ -19,7 +20,13 @@ const BEAT = 60 / BPM;
 
 type Status = "stopped" | "playing" | "paused";
 
-export default function Solution({ cf, cp, id, facts }: SolutionProps) {
+export default function Solution({
+  cf,
+  cp,
+  id,
+  facts,
+  onSelect,
+}: SolutionProps) {
   const midi = tracksToMidi(cf, cp);
 
   const [status, setStatus] = useState<Status>("stopped");
@@ -135,6 +142,9 @@ export default function Solution({ cf, cp, id, facts }: SolutionProps) {
       </button>
       <button type="button" onClick={handleDownload}>
         Download
+      </button>
+      <button type="button" onClick={onSelect}>
+        Select
       </button>
       <details>
         <summary>
