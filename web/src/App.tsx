@@ -26,63 +26,59 @@ export default function App() {
   const [enabledRules, setEnabledRules] = useState<Record<Rule, boolean>>(
     Object.fromEntries(RULES.map((r) => [r, true])) as Record<Rule, boolean>,
   );
-  const abortRef = useRef<AbortController | null>(null);
+  const [solvedCf, setSolvedCf] = useState<(Note | null)[] | null>(null);
 
-  // invalidate solutions when their input (cf or enabledRules) changes
-  const [solutionsCf, setSolutionsCf] = useState(cf);
-  const [solutionsRules, setSolutionsRules] = useState(enabledRules);
-  const [solutonsFrozen, setSolutionsFrozen] = useState(frozenCp);
-  if (
-    cf !== solutionsCf ||
-    enabledRules !== solutionsRules ||
-    frozenCp !== solutonsFrozen
-  ) {
-    setSolutionsCf(cf);
-    setSolutionsRules(enabledRules);
-    setSolutions([]);
-    setSolverInput(null);
-    setSolutionsFrozen(frozenCp);
-  }
+  const abortRef = useRef<AbortController | null>(null);
 
   const program = solverInput && solverInput.solver + solverInput.dusaInput;
 
-  useEffect(() => {
+  const cfIncomplete = cf.length === 0 || cf.some((n) => n === null);
+
+  // terminate the worker on unmount
+  useEffect(() => () => abortRef.current?.abort(), []);
+
+  const onSolve = async () => {
+    // cancel any prior solve before starting a new one
+    abortRef.current?.abort();
+
+    if (cf.length === 0) return;
+    if (!cf.every((n): n is Note => n !== null)) return;
+
     const ctrl = new AbortController();
     abortRef.current = ctrl;
 
-    (async () => {
-      if (cf.length === 0) return;
-      if (!cf.every((n): n is Note => n !== null)) return;
+    setSolutions([]);
+    setSolverInput(null);
+    setError(null);
+    setDone(false);
 
-      try {
-        const { solver, dusaInput, solutions } = await solve(
-          cf,
-          frozenCp
-            .map((n, i) => (n === null ? null : ([i, n] satisfies Freeze)))
-            .filter((n) => n !== null),
-          Object.entries(enabledRules)
-            .filter(([, on]) => on)
-            .map(([name]) => name as Rule),
-          ctrl.signal,
-        );
-        setSolverInput({ solver, dusaInput });
-        let count = 0;
-        for await (const sol of solutions) {
-          setSolutions((current) => [...current, sol]);
-          count += 1;
-          if (count >= SOLUTION_LIMIT) break;
-        }
-        setDone(true);
-      } catch (e) {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        console.error(e);
-        setError(e);
-        setDone(true);
+    try {
+      const { solver, dusaInput, solutions } = await solve(
+        cf,
+        frozenCp
+          .map((n, i) => (n === null ? null : ([i, n] satisfies Freeze)))
+          .filter((n) => n !== null),
+        Object.entries(enabledRules)
+          .filter(([, on]) => on)
+          .map(([name]) => name as Rule),
+        ctrl.signal,
+      );
+      setSolverInput({ solver, dusaInput });
+      let count = 0;
+      for await (const sol of solutions) {
+        setSolutions((current) => [...current, sol]);
+        count += 1;
+        if (count >= SOLUTION_LIMIT) break;
       }
-    })();
-
-    return () => ctrl.abort();
-  }, [cf, frozenCp, enabledRules]);
+      setSolvedCf(cf);
+      setDone(true);
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      console.error(e);
+      setError(e);
+      setDone(true);
+    }
+  };
 
   return (
     <>
@@ -125,11 +121,18 @@ export default function App() {
         <div className={style.underNotes}>
           <button
             type="button"
-            title="Stop"
+            onClick={onSolve}
+            disabled={cfIncomplete || !done}
+          >
+            Solve
+          </button>
+          <button
+            type="button"
             onClick={() => {
               abortRef.current?.abort();
               setDone(true);
             }}
+            disabled={done}
           >
             Stop
           </button>
@@ -158,10 +161,9 @@ export default function App() {
       {!done && <p>Working ...</p>}
       {error && <pre>{String(error)}</pre>}
 
-      {done &&
-        cf.length !== 0 &&
-        cf.every((n) => n !== null) &&
-        solutions.length === 0 && <p>No solutions found.</p>}
+      {done && cf === solvedCf && solutions.length === 0 && (
+        <p>No solutions found.</p>
+      )}
 
       <ul className={style.solutions}>
         {solutions.map((sol, i) => (
