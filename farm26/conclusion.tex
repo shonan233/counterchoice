@@ -1,0 +1,18 @@
+\section{Conclusion and Future Work}
+\label{sec:conclusion}
+We presented CounterChoice, graphical tool that composes first-species counterpoint collaboratively with the casual creators who use it.
+CounterChoice is a case study for the finite-choice logic programming language Dusa. 
+This case study searched for gaps of three kinds: gaps between the rules of counterpoint and rules of logic (RQ1), gaps between the Dusa backend and the desired front-end experience (RQ2), and gaps between the present Dusa tooling and desired developer experience (RQ3).
+
+For RQ1, we achieved exact formalizations of all ten 10 first-species counterpoint rules we attempted.
+We found Dusa's negative constraints particularly helpful for encoding a prohibition on four consecutive leaps.
+Compared to functional correctness, performance optimization was the greater challenge in logical rule design.
+For RQ2, we conclude that usable interfaces for casual creators are often bespoke interfaces, in our case a graphical melody editor with MIDI playback.
+We argue then that it is na\"ive to judge the success of Dusa by the number of lines of code saved or the ratio of Dusa to JavaScript code.
+It is more meaningful to consider whether the Dusa code does something the JavaScript code could not do easily, and how thoroughly the power of a programming language is exposed to the user.
+Dusa succeeds on the first metric, efficiently pruning a search space characterized by a long list of sometimes-nonlocal constraints.
+On the second metric, CounterChoice makes initial progress by allowing the user to select a ruleset at runtime.
+For RQ3, we experienced the limitations of output-based debugging and saw that randomization is a double-edged sword, making reproducibility more difficult.
+
+Our future work includes technical advances, tooling improvements, and broader application.
+Technical improvements include weighted and soft constraints to account for preferences and unwritten rules of composition (e..g, to prevent the long chains of unisons observed in the current implementation) and generalization to polyphonic music with more than two voices, such as chorale
