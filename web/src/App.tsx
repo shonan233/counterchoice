@@ -142,7 +142,7 @@ export default function App() {
               <a
                 rel="noreferrer"
                 target="_blank"
-                href={`https://dusa.rocks/#program=${program}`}
+                href={`https://dusa.rocks/#program=${encodeURIComponent(program)}`}
               >
                 dusa.rocks
               </a>
