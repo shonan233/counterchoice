@@ -9,6 +9,7 @@ import {
 import { solve } from "./dusa.service";
 import Solution from "./Solution";
 import Notes from "./Notes";
+import { usePlayback } from "./usePlayback";
 import style from "./App.module.css";
 
 const SOLUTION_LIMIT = 9;
@@ -33,6 +34,9 @@ export default function App() {
   const program = solverInput && solverInput.solver + solverInput.dusaInput;
 
   const cfIncomplete = cf.length === 0 || cf.some((n) => n === null);
+  const cfHasNotes = cf.some((n) => n !== null);
+
+  const cfPlayback = usePlayback([cf]);
 
   // terminate the worker on unmount
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -119,6 +123,13 @@ export default function App() {
         </ul>
 
         <div className={style.underNotes}>
+          <button
+            type="button"
+            onClick={cfPlayback.onPlayPause}
+            disabled={cfPlayback.loading || !cfHasNotes}
+          >
+            {cfPlayback.label} cf
+          </button>
           <button
             type="button"
             onClick={onSolve}

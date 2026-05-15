@@ -1,8 +1,6 @@
-import { useEffect, useRef, useState } from "react";
-import * as Tone from "tone";
 import { factToString, type Note } from "./util";
-import { mapNote, tracksToMidi } from "./midi";
-import { claimPlayback, releasePlayback, getSampler } from "./piano";
+import { tracksToMidi } from "./midi";
+import { usePlayback } from "./usePlayback";
 import style from "./Solution.module.css";
 import Notes from "./Notes";
 import type { Fact } from "dusa";
@@ -15,11 +13,6 @@ export interface SolutionProps {
   onSelect: () => void;
 }
 
-const BPM = 120;
-const BEAT = 60 / BPM;
-
-type Status = "stopped" | "playing" | "paused";
-
 export default function Solution({
   cf,
   cp,
@@ -28,82 +21,8 @@ export default function Solution({
   onSelect,
 }: SolutionProps) {
   const midi = tracksToMidi(cf, cp);
-
-  const [status, setStatus] = useState<Status>("stopped");
-  const [loading, setLoading] = useState(false);
-  const pauseOffsetRef = useRef(0);
-
   const factsStrings = facts.map(factToString);
-
-  useEffect(
-    () => () => {
-      releasePlayback();
-      Tone.getTransport().stop();
-      Tone.getTransport().cancel();
-    },
-    [],
-  );
-
-  const reset = () => {
-    pauseOffsetRef.current = 0;
-    setStatus("stopped");
-  };
-
-  const scheduleAndPlay = () => {
-    const transport = Tone.getTransport();
-    transport.stop();
-    transport.cancel();
-    transport.seconds = pauseOffsetRef.current;
-
-    let maxNoteEnd = 0;
-    for (const track of [cf, cp]) {
-      for (let t = 0; t < track.length; t++) {
-        if (track[t] === undefined) continue;
-        const noteStart = t * BEAT;
-        maxNoteEnd = Math.max(maxNoteEnd, noteStart + BEAT);
-        if (noteStart < pauseOffsetRef.current) continue;
-        transport.schedule((time) => {
-          getSampler().triggerAttackRelease(
-            Tone.Frequency(mapNote(track[t]), "midi").toNote(),
-            BEAT * 0.9,
-            time,
-          );
-        }, noteStart);
-      }
-    }
-
-    transport.scheduleOnce(() => {
-      pauseOffsetRef.current = 0;
-      releasePlayback();
-      setStatus("stopped");
-    }, maxNoteEnd + 0.1);
-
-    transport.start();
-  };
-
-  const handlePlayPause = async () => {
-    if (status === "playing") {
-      pauseOffsetRef.current = Tone.getTransport().seconds;
-      Tone.getTransport().pause();
-      setStatus("paused");
-      return;
-    }
-
-    await Tone.start();
-
-    if (status === "stopped") {
-      const sampler = getSampler();
-      if (!sampler.loaded) {
-        setLoading(true);
-        await Tone.loaded();
-        setLoading(false);
-      }
-      claimPlayback(reset);
-    }
-
-    scheduleAndPlay();
-    setStatus("playing");
-  };
+  const { loading, label, onPlayPause } = usePlayback([cf, cp]);
 
   const handleDownload = () => {
     const url = URL.createObjectURL(
@@ -116,14 +35,6 @@ export default function Solution({
     URL.revokeObjectURL(url);
   };
 
-  const label = loading
-    ? "Loading..."
-    : status === "playing"
-      ? "Pause"
-      : status === "paused"
-        ? "Resume"
-        : "Play";
-
   return (
     <div className={style.solution}>
       <div>
@@ -135,7 +46,7 @@ export default function Solution({
       <button
         type="button"
         className={style.playButton}
-        onClick={handlePlayPause}
+        onClick={onPlayPause}
         disabled={loading}
       >
         {label}
