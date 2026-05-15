@@ -18,7 +18,7 @@ function solve({
     "\n" +
     cf.map((n, i) => `cf ${i} is ${n}.`).join("\n") +
     "\n" +
-    frozen.map(([idx, n]) => `at 1 ${idx} is ${n}.`).join("\n") +
+    frozen.map(([idx, n]) => `at ${idx} 1 is ${n}.`).join("\n") +
     `\nlength is ${cf.length}.\n`;
 
   postMessage({
