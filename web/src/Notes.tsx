@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { PITCHES, type Note } from "./util";
 
 // stable reference for a "no notes" default prop:
-const EMPTY_NOTES: Note[] = [];
+const EMPTY_NOTES: (Note | null)[] = [];
 
 // data that is actually being edited:
 interface Step {
@@ -97,29 +97,33 @@ const INSTRUMENTS: Record<string, Instrument> = {
   },
 };
 
-// build a grid from cf and cp index arrays.
-// out-of-range indices (e.g. -1 for "no note") are ignored.
-function buildGrid(cf: Note[], cp: Note[]): Uint8Array {
+// build a grid from cf and cp index arrays. null entries are empty steps.
+function buildGrid(cf: (Note | null)[], cp: (Note | null)[]): Uint8Array {
   const grid = new Uint8Array(STEPS.length * PITCHES.length);
   const cfBit = INSTRUMENTS.cf.noteBit;
   const cpBit = INSTRUMENTS.cp.noteBit;
   for (let s = 0; s < STEPS.length; ++s) {
-    if (s < cf.length && cf[s] >= 0 && cf[s] < PITCHES.length) {
-      grid[s * PITCHES.length + cf[s]] |= cfBit;
+    const cfVal = cf[s];
+    if (cfVal != null) {
+      grid[s * PITCHES.length + cfVal] |= cfBit;
     }
-    if (s < cp.length && cp[s] >= 0 && cp[s] < PITCHES.length) {
-      grid[s * PITCHES.length + cp[s]] |= cpBit;
+    const cpVal = cp[s];
+    if (cpVal != null) {
+      grid[s * PITCHES.length + cpVal] |= cpBit;
     }
   }
   return grid;
 }
 
-// extract cf pitch indices from a grid; -1 means "no note in this step".
-function gridToCf(grid: Uint8Array): Note[] {
-  const bit = INSTRUMENTS.cf.noteBit;
-  const out: Note[] = [];
+// extract pitch indices for one instrument from a grid; null means "no note in this step".
+function gridToTrack(
+  grid: Uint8Array,
+  instrument: "cf" | "cp",
+): (Note | null)[] {
+  const bit = INSTRUMENTS[instrument].noteBit;
+  const out: (Note | null)[] = [];
   for (let s = 0; s < STEPS.length; ++s) {
-    let idx: Note = -1 as Note;
+    let idx: Note | null = null;
     for (let p = 0; p < PITCHES.length; ++p) {
       if (grid[s * PITCHES.length + p] & bit) {
         idx = p as Note;
@@ -461,10 +465,13 @@ function redraw(
 
 export interface NotesProps {
   className?: string;
-  cf?: Note[];
-  cp?: Note[];
+  // null entries are empty steps (no note placed yet).
+  cf?: (Note | null)[];
+  cp?: (Note | null)[];
   editable?: boolean;
-  onChange?: (updated: Note[]) => void;
+  // edits to the cf track. shift-click edits cp instead and fires onCpChange.
+  onCfChange?: (updated: (Note | null)[]) => void;
+  onCpChange?: (updated: (Note | null)[]) => void;
 }
 
 export default function Notes({
@@ -472,7 +479,8 @@ export default function Notes({
   cf = EMPTY_NOTES,
   cp = EMPTY_NOTES,
   editable,
-  onChange,
+  onCfChange,
+  onCpChange,
 }: NotesProps) {
   const grid = buildGrid(cf, cp);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -517,8 +525,10 @@ export default function Notes({
     // force initial redraw, don't wait for repaint
     redraw(canvas, ctx, uiRef.current, gridRef.current);
 
-    // [create and] lift (start moving) a note:
-    const startLift = () => {
+    // [create and] lift (start moving) a note. shift selects the cp track,
+    // otherwise cf. the modifier is captured at mousedown and frozen for the
+    // duration of this drag.
+    const startLift = (useCp: boolean) => {
       const ui = uiRef.current;
       updateOver(canvas, ui);
 
@@ -527,8 +537,7 @@ export default function Notes({
 
       const idx = ui.mouse.step * PITCHES.length + ui.mouse.pitch;
 
-      // TODO: idea of current instrument for editing
-      const instrument = "cf";
+      const instrument: "cf" | "cp" = useCp ? "cp" : "cf";
       const bit = INSTRUMENTS[instrument].noteBit;
 
       ui.lifted = {
@@ -602,7 +611,8 @@ export default function Notes({
             }
           }
 
-          onChange?.(gridToCf(newGrid));
+          const callback = instrument === "cp" ? onCpChange : onCfChange;
+          callback?.(gridToTrack(newGrid, instrument));
           ui.lifted = undefined;
           requestRedraw();
         }
@@ -622,7 +632,7 @@ export default function Notes({
     };
     const onMouseDown = (evt: MouseEvent) => {
       setMousePos(canvas, uiRef.current, evt, requestRedraw);
-      if (evt.button === 0) startLift();
+      if (evt.button === 0) startLift(evt.shiftKey);
       evt.preventDefault();
     };
 
@@ -642,7 +652,7 @@ export default function Notes({
         canvas.removeEventListener("mousedown", onMouseDown);
       }
     };
-  }, [editable, onChange]);
+  }, [editable, onCfChange, onCpChange]);
 
   return <canvas ref={canvasRef} className={className} />;
 }

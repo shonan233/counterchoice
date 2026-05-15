@@ -1,5 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { RULES, type Rule, type Note, type WorkerSolution } from "./util";
+import {
+  RULES,
+  type Rule,
+  type Note,
+  type WorkerSolution,
+  type Freeze,
+} from "./util";
 import { solve } from "./dusa.service";
 import Solution from "./Solution";
 import Notes from "./Notes";
@@ -8,7 +14,8 @@ import style from "./App.module.css";
 const SOLUTION_LIMIT = 9;
 
 export default function App() {
-  const [cf, setCf] = useState<Note[]>([]);
+  const [cf, setCf] = useState<(Note | null)[]>([]);
+  const [frozenCp, setFrozenCp] = useState<(Note | null)[]>([]);
   const [done, setDone] = useState(true);
   const [solutions, setSolutions] = useState<WorkerSolution[]>([]);
   const [error, setError] = useState<unknown>(null);
@@ -24,11 +31,17 @@ export default function App() {
   // invalidate solutions when their input (cf or enabledRules) changes
   const [solutionsCf, setSolutionsCf] = useState(cf);
   const [solutionsRules, setSolutionsRules] = useState(enabledRules);
-  if (cf !== solutionsCf || enabledRules !== solutionsRules) {
+  const [solutonsFrozen, setSolutionsFrozen] = useState(frozenCp);
+  if (
+    cf !== solutionsCf ||
+    enabledRules !== solutionsRules ||
+    frozenCp !== solutonsFrozen
+  ) {
     setSolutionsCf(cf);
     setSolutionsRules(enabledRules);
     setSolutions([]);
     setSolverInput(null);
+    setSolutionsFrozen(frozenCp);
   }
 
   const program = solverInput && solverInput.solver + solverInput.dusaInput;
@@ -38,13 +51,15 @@ export default function App() {
     abortRef.current = ctrl;
 
     (async () => {
-      if (cf.some((n) => n < 0 || n > 14)) return;
       if (cf.length === 0) return;
+      if (!cf.every((n): n is Note => n !== null)) return;
 
       try {
         const { solver, dusaInput, solutions } = await solve(
           cf,
-          [],
+          frozenCp
+            .map((n, i) => (n === null ? null : ([i, n] satisfies Freeze)))
+            .filter((n) => n !== null),
           Object.entries(enabledRules)
             .filter(([, on]) => on)
             .map(([name]) => name as Rule),
@@ -67,7 +82,7 @@ export default function App() {
     })();
 
     return () => ctrl.abort();
-  }, [cf, enabledRules]);
+  }, [cf, frozenCp, enabledRules]);
 
   return (
     <>
@@ -78,12 +93,14 @@ export default function App() {
         <Notes
           className={style.mainNotes}
           cf={cf}
+          cp={frozenCp}
           editable
-          onChange={(newCf) => {
-            if (newCf.every((n) => n <= 7)) {
+          onCfChange={(newCf) => {
+            if (newCf.every((n) => n === null || n <= 7)) {
               setCf(newCf);
             }
           }}
+          onCpChange={(newCp) => setFrozenCp(newCp)}
         />
 
         <ul className={style.rules}>
