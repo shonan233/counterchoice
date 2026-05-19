@@ -1,0 +1,17 @@
+\section{Discussion}
+
+\YE{These are simply some comments that I thought might be helpful to the person writing the discussion part, not meant to be a draft of the Discussion section.}
+
+\subsection{Observations}
+\begin{itemize}
+    \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
+    \item Another feature of Dusa is the randomness in selecting a child when branching out, which causes fluctuations in the number of choices and deductions between runs. This makes it harder to reliably check the effects of alterations in the code. (Solution order is changed between runs of same code, optimization is hard to tell without reruns unless very obvious)
+    \item We observed that while Dusa found solutions within a second at some attempts, it executed indefinitely possibly due to getting stuck at a bad branch somewhere along the solution steps at others
+\end{itemize}
+
+\subsection{Possible Next Steps} % this goes into future work section I think
+\begin{itemize}
+    \item A backtracking mechanism can be added to Divide-and-conquer algorithm that goes back and tries alternative solutions if it hits a dead end in a chunk.
+    \item When there are multiple choices for the next \texttt{cp}, we can encourage selecting ones that are moving contrary motion by fuzzy logic or make it mandatory. 
+    \item We can implement perfect and imperfect intervals to complete all of the first species counterpoint rules. Then, we can move on to higher species.
+\end{itemize}

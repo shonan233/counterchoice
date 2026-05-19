@@ -1,0 +1,287 @@
+\newcommand{\YE}[1]{\textcolor{blue}{\textbf{YE:} #1}}
+
+\YE{a question about the naming:  I used "time step" when talking about the argument T used in the code, but what would be the proper way to refer to T? (at time T, at step T, at position T)}\\
+
+\YE{Another note about naming:
+ As the counterpoint rules and the Dusa rules both have the word rule, it may look like they are equivalent; however, whenever "rules", "counterpoint rules", "implemented rules" are used, they are the musical rules related to counterpoint, whereas "Dusa rules", "open rules", "closed rules" refer to the declarations in Dusa of the form \texttt{<conclusion> :-<premises>}. }\\
+ 
+\YE{In the "Mentioning Variables" part of "Refactoring", I said Dusa needs to calculate the values of "cp T is \_", when using the wildcard. Is this accurate?}\\
+
+\YE{Also, in the "Reducing Choices" part of "Refactoring", if someone could check the calculation for the number of choices, I would greatly appreciate it.}
+
+
+% figures are
+%      Overview: brief input (cf 0 is 1. cf 1 is 2. length is 1.) *** DONE *** 
+%                brief output (some of the deduced facts containing cp T and cpNote Ts) *** DONE ***
+%      Represenation of Music: One interval in sheet music notation to visually explain cf, cp etc. 
+%                              Other parts of the definitions if required
+%      Enforcement: judgeCP code snippets as needed
+
+
+% Depending on which note we choose to be the note O, the note representation part need to be updated (note 0 is C2 etc)
+
+% Added the unison rule complying with Fux that it can only be used at the beginning and ending, but Dusa implementation does not have that rule yet
+
+
+\section{Design and Implementation}
+
+\subsection*{Overview}
+We want to create an implementation in Dusa to procedurally generate valid accompanying melodies that satisfy the first species of counterpoint to the cantus firmus melody given by the users.
+
+The input is the set of notes that make up the cantus firmus melody written one by one by the user. For Dusa to generate solutions, it needs to know the values of each counterpoint note as well as the length of the piece. 
+\begin{verbatim}
+    cf 0 is 1.
+    cf 1 is 4.
+    cf 2 is 3.
+    ...
+    length is N.
+\end{verbatim}
+
+
+The output is the values of \texttt{cp} and \texttt{cpNote} corresponding to the counterpoint melody.
+\begin{verbatim}
+    cp 0 is unison.
+    cp 1 is third.
+    ...
+    cpNote 0 is 1.
+    cpNote 1 is 6.
+    ...
+\end{verbatim}
+
+Essentially, the problem can be summarized as selecting the correct interval values for cantus firmus notes given as a set of integer values.
+
+% I don't know if we will use the web version or JavaScript API in the final version so I am leaving this commented out for now. Below is how the original version handled it..
+% We call dusa.solution() inside Java Script to get one solution Dusa generates, and then convert that solution into MIDI format for being able to listen to it.
+
+\subsection{Representation of Music}
+We used facts and rules in Dusa to express musical terms such as notes and intervals.
+\paragraph{Notes}
+ The notes are expressed as numbers starting from 0 in a diatonic scale system, such as \texttt{0} is \texttt{C3}, \texttt{1} is \texttt{D3} and so on. % need to check whether this is true in the final implementation
+
+ The note range needed is the range that the cantus firmus melody spans plus one octave, as the upper limit of the counterpoint is the note creating an octave with the highest note of the cantus firmus. The cantus firmi we used in our examples spanned only one octave range. Consequently, we used notes up to 15 to cover two octave ranges in total. However, it is possible to easily increase the number of notes if required.
+
+ \paragraph{Intervals}
+ As per the specification of the rules, only consonant intervals are defined, namely \texttt{unison}, \texttt{third}, \texttt{fifth}, \texttt{sixth} and \texttt{octave}. No distinction is made between perfect and imperfect intervals. Likewise, no distinction was made between major/minor thirds and sixths.
+
+\paragraph{Cantus Firmus and Counterpoint}
+
+In the code, \texttt{cf T} refers to the cantus firmus note at time step T. Similarly, \texttt{cpNote T} refers to the counterpoint note, and \texttt{cp T} refers to the interval between \texttt{cf} and \texttt{cpNote} at a time step \texttt{T}.
+    % inserting sheet music notation of an interval and visually showing what cf, cp, and cpNote correspond to would be good
+\begin{figure}[H]
+    \includegraphics[width=0.5\linewidth]{interval-octave.png}
+\end{figure}
+**** Figure here is temporary **********
+In this figure, cantus firmus has a C5, counterpoint has a C6, and they create an \texttt{octave} together. In our representation, this is expressed as: 
+\begin{verbatim}
+    cf 0 is 0.
+    cp 0 is octave.
+    cpNote 0 is 7.
+\end{verbatim}
+
+In the implementation, the cantus firmus line is always below the counterpoint line, and all the interval computations are made upwards from cf. Although in reality, it is possible to have a cantus firmus line above the counterpoint line.
+
+Note that the implementation does not have duration information for the notes. This is intentional as the first species of counterpoint is for note-against-note, for notes of equal length.
+
+ 
+
+\subsection{Implemented Rules}
+
+The counterpoint rules applied are adapted from a mixture of first species of counterpoint rules from Fux~\cite{fux-gradus} and Tonesavvy's interactive counterpoint exercises~\cite{tonesavvy}. Rules can be categorized into two based on whether they are related to the distance between a cantus firmus and counterpoint note at a specific time step \texttt{T}, or related to the movement in the counterpoint or counterpoint and cantus firmus together as vertical and horizontal.
+
+\subsubsection{Vertical Constraints}
+The common feature of these rules is that they concern the properties of individual intervals. Because the rules in this set are evaluated according to their position on the vertical axis, they can be thought of as governing the harmony. The rules are as follows:
+
+\begin{itemize}
+    \item Starts with a \texttt{unison} or an \texttt{octave}.
+    \item Ends with a \texttt{unison} or an \texttt{octave}.
+    \item The interval \texttt{unison} should not be employed anywhere except at the beginning and the end.
+    \item For any step \texttt{T}, interval between cantus firmus and counterpoint note should be consonant.
+\end{itemize}
+
+For the final rule, only consonant intervals, namely \texttt{unison}, \texttt{third}, \texttt{fifth}, \texttt{sixth}, and \texttt{octave} were declared as interval facts. Therefore, the rule is trivially satisfied by the definition, and redundant consonant checks were eliminated during the setup phase.
+
+
+\subsubsection{Horizontal Constraints} 
+Rules grouped together in this category concern the movement of counterpoint notes, or the movement of intervals in consequent bars. This means that they can be thought of as governing the melody and the harmony together. 
+
+The rules are as follows:
+\begin{itemize}
+    \item Ends with a cadence: Depending on the ending, it either goes from a \texttt{sixth} to an \texttt{octave} or from a \texttt{third} into a \texttt{unison}.
+    \item If \texttt{cp} in step \texttt{T} is \texttt{fifth} or an \texttt{octave}, the next step \texttt{T+1} should not repeat the same interval. (Parallel Fifths / Octaves)
+    \item If the notes in cantus firmus and counterpoint melodies move in the same direction, and there is a \texttt{leap} in the counter-melody going from time step \texttt{T} to \texttt{T+1}, the resulting interval should not be a \texttt{fifth} or an \texttt{octave} (Direct fifths or octaves).
+    \item Counter-melody needs to move in \texttt{step}s, or in \texttt{leap}s of a 3rd, 4th, 5th, or 6th.
+    \item Counter-melody should not contain multiple successive large leaps, namely \texttt{fifth} and \texttt{sixth}, in the same direction.
+    \item Counter-melody cannot have more than 3 \texttt{leap}s in a row.
+\end{itemize}
+
+These rules require examining the problem in a different light. The rules so far in the Vertical Constraints section only deal with rules related to a specific time step \texttt{T}. However, rules in Horizontal Constraints are dependent on values across multiple bars. They require checking notes and intervals at time step \texttt{T} and its consequent steps \texttt{T+1}, and so on, bringing a new layer of complexity to the computation. 
+
+
+\subsubsection{Enforcing the Rules}
+
+The task is to find valid \texttt{cp} values for all time steps \texttt{T} for the given \texttt{cf} values. Therefore, we introduced Dusa rules to generate \texttt{cp}s and ensure that only valid ones are accepted:
+
+\begin{verbatim}
+    judgeCP T I is? good :-
+      cf T is _,
+      interval I is _.
+    cp T is? I :-
+      judgeCP T I is good.
+\end{verbatim}
+
+When generating the solution, for every \texttt{T}, \texttt{cp T} can take any interval value by an open rule. To eliminate solutions that violate the rules, another rule is introduced, called \texttt{judgeCP T I}, which evaluates interval \texttt{I} and time step \texttt{T} pair as either \texttt{good} or \texttt{bad}. If a rule violation is found, it is evaluated as \texttt{bad}. Otherwise, it is evaluated as \texttt{good} as an open rule. In the premise of \texttt{cp T is? I} rule, \texttt{judgeCP T I is good} ensures that only solutions in which counterpoint rules are satisfied are generated.
+
+Also, facts and rules used only as intermediate steps such as \texttt{movement} are all made to be lazy predicates. This is to prevent redundant deductions in the output.
+
+Below are some of the rules from the implementation:
+
+% a different set of rules can also be explained here optionally
+
+\paragraph{Cadence - Unison}
+\begin{verbatim}
+judgeCP (minus length 1) I is bad :-
+  (minus length 1) is T,
+  cp T is I,
+  (cf (suc T)) > (cf T),
+  I != third.
+
+cp length is unison :-
+  cp (minus length 1) is third.
+\end{verbatim}
+
+The rule states that if the cantus firmus melody ends with an upwards motion, the counterpoint melody should fall in contrary motion from a \texttt{third} to a \texttt{unison}. 
+
+The check for upward motion in the last two notes of cantus firmus is done by \texttt{(cf (suc T)) > (cf T)}, and if \texttt{cp T} is not \texttt{third} when there is upward movement, \texttt{judgeCP} evaluates to \texttt{bad}. The Dusa rule below sets the \texttt{cp length} to \texttt{unison} for the last note. Note that we assumed that the user will enter a valid ending for the cantus firmus, eg. not oblique motion.
+
+\paragraph{Direct Octaves}
+\begin{verbatim}
+judgeCP (suc T) octave is bad :-
+  cf T is N, cp T is I,
+  cf (suc T) is N',
+  chordMovement N I N' octave is M,
+  parallel M,
+  leap (suc T),
+  cp (suc T) is octave.
+\end{verbatim}
+
+The rule states that if both voices are moving with parallel motion to the next bar, and the upper voice is a \texttt{leap}, then the resulting interval should not be an octave, where the facts \texttt{chordMovement} and \texttt{leap} are defined as:
+\begin{verbatim}
+chordMovement N1 I1 N2 I2 is (pair M1 M2)
+  :-  movement N1 N2 is M1,
+      movement (plus N1 (interval I1))
+               (plus N2 (interval I2)) is M2.
+\end{verbatim}
+\begin{verbatim}
+leap T :-
+  intervalCP T is D,
+  D > 1.
+\end{verbatim}
+
+Note that both \texttt{leap} and \texttt{chordMovement} introduce new facts in their premises, but we will not show them here for space constraints. The \texttt{intervalCP} refers to the absolute distance between two \texttt{cpNote} values.
+
+\paragraph{No more than 3 leaps in a row}
+\begin{verbatim}
+judgeCP T4 I is bad :-
+  cf T is _,
+  (suc T) is T1,
+  (suc T1) is T2,
+  (suc T2) is T3,
+  (suc T3) is T4,
+  cp T4 is I,
+  leap (T1),
+  leap (T2),
+  leap (T3),
+  leap (T4).
+\end{verbatim}
+As seen in this rule, to evaluate any given \texttt{cp T} as \texttt{good} or \texttt{bad}, the values of next 3 consecutive \texttt{cp}s need to be computed; this is what is meant by the new layer of complexity mentioned before.
+
+
+
+
+
+\subsection{Optimization}
+The above approach using \texttt{judgeCP} worked well with small cantus firmi, but solution generation hit a bottleneck around 12 note pieces and failed to produce a solution reliably for anything longer.\par Therefore, we reexamined the Dusa code and optimized it in the following ways.
+
+\subsubsection{Refactoring}
+
+We tried to see how the implementation can be made more efficient while preserving the original functionality. For this purpose, we made some changes to reduce the number of choices and deductions by Dusa, and rearranged the rule-checking without using \texttt{judgeCP}.
+
+\paragraph{Mentioning Variables}
+One feature of Dusa is that the variables used on the conclusion of a rule need to be mentioned by one of the premises on the right hand side. If the value of the variable is not important, it is possible to use a wildcard, \texttt{\_}, in the premise for mentioning. Wildcards work by matching all possible values for that variable. 
+
+In \texttt{judgeCP T I} rules, we check whether \texttt{T} is a valid time step with the premise \texttt{cp T is \_}. Although the wildcard discards the matched value, the system must still derive all matching \texttt{cp T} facts, increasing the deduction space. Since \texttt{cp} and \texttt{cf} exist for the same time steps, changing every instance of \texttt{cp T is \_} that is used only to mention \texttt{T} with the premise \texttt{cf T is \_} preserves the same functionality and is much lighter than \texttt{cp} to create each time.
+
+\paragraph{Reducing Choices}
+Another area where optimization was necessary was the number of choices made. Originally, there were two places where choices were made, both using open choices:\\
+\begin{verbatim}
+judgeCP N I is? good :- 
+  cf N is _, interval I is _.
+
+cp T is? I :- interval I is _, judgeCP T I is good.
+\end{verbatim}
+In this approach, the \texttt{cp} values are what we want to generate. For any \texttt{cp T} to make the choice of interval \texttt{I}, there are two premises: interval \texttt{I} is matched with all possible intervals, and the value of \texttt{judgeCP T I} must be \texttt{good}. Since open rules of Dusa do not force \texttt{judgeCP} to be \texttt{good}, \texttt{judgeCP T I} can be \texttt{good} for all valid \texttt{cf N}s and \texttt{interval I}s unless it is found to be \texttt{bad} by another \texttt{judgeCP T I is bad :- ...} rule.
+
+% I need to check the real complexity and see whether it is consistent with what I wrote, but during my attempts, I could not actually understand why so many choices were made. Technically, there is 2^(5*N) choices for judgeCP and 5^N choices for cp
+So for any \texttt{T}, when the number of valid intervals is 5 and the cantus firmus have \texttt{N} notes, \texttt{5*N} \texttt{judgeCP} values are selected as "possibly good" and then filtered out by the latter \texttt{judgeCP T I is bad} rules.
+
+Open rules only evaluate to the value attributed in their conclusion after all other computations are exhausted that would give the rule another value. Therefore, they encourage Dusa to continue making deductions. To force Dusa to make a choice earlier and reduce branching, we changed the open rule \texttt{judgeCP} with a closed rule version.
+
+\begin{verbatim}
+judgeCP T I is {good,bad} :-
+  cf T is _,
+  interval I is _.
+\end{verbatim}
+
+This version forces Dusa to assign either \texttt{good} or \texttt{bad} to each \texttt{judgeCP T I} upfront. Afterwards, the intersection of cases where \texttt{judgeCP T I is bad} and these initial choices is taken. For the \texttt{T I} pairs found to be \texttt{bad}, only \texttt{bad} is a valid solution. For the rest of the pairs however, both \texttt{good} and \texttt{bad} will be generated as separate solutions by the closed choice's nature. We included a forbid declaration at the end to filter out the redundant solutions where only \texttt{T I} pairs alternate between \texttt{good} and \texttt{bad}. This approach significantly reduced the number of deductions and choices while finding the same set of solutions.
+
+\paragraph{Forbid Declarations}
+Although using a closed rule for \texttt{judgeCP} was more efficient than the initial version, two issues remained. First, all rules are enforced by a single rule named \texttt{judgeCP}. And second, essentially, the only choice needed is \texttt{cp T is? I}; that is, even if we reduced the number of choices with the introduction of the closed rule, we should be able to eliminate choices for anything besides \texttt{cp} entirely. And our solution was to transform \texttt{judgeCP} from a rule into separate  facts as follows:
+\begin{verbatim}
+    cadenceNotThirdUnison (minus length 1) I :-
+  (minus length 1) is T,
+  cp T is I,
+  (cf (suc T)) > (cf T),
+  I != third.
+  ...
+  #forbid cadenceNotThirdUnison _ _.
+\end{verbatim}
+At the end of the code, we include all violating facts as "forbid declarations" with their unique names. This approach has three benefits:
+\begin{itemize}
+    \item Having rules separately makes it easy to understand/debug since rule names are visible.
+    \item It makes it easy for anyone who wants to adjust the ruleset to easily select which rules they want to apply.
+    \item Since \texttt{judgeCP} is eliminated, dependencies of some of the facts are reduced. In the previous version, all rules needed to have an \texttt{N} and \texttt{I} component but not anymore.
+\end{itemize}
+
+With these final changes, we reduced the system with multiple choices into a modular one-open-choice model while keeping the solution set intact. The initial bottleneck of 12 notes also increased to more than 30. However, for very long pieces, the code still takes up a lot of time due to search space getting exponentially? larger as T increases. For that reason, we tried another approach to tackle longer pieces as the next step.
+
+
+
+
+
+
+\subsubsection{Alternative Approach: Divide-and-Conquer}
+To circumvent/work around the bottleneck of 12 notes, the idea we came up with is to divide the cantus firmus into smaller chunks, solve them, and then assemble those solutions together to get the final solution. This divide and conquer approach has the advantage of resembling how humans compose counterpoint for specific melody parts and put them together, instead of treating each note and phrase with the same importance, as well as the advantage of bypassing the large search space.
+
+
+\paragraph{Overlapping Segments}
+Checks for the consecutive notes need a special treatment in this method to see that the end and starting \texttt{cp}s are compatible in the chunks. To tackle this, after creating the solution for the first chunk, we selected the consecutive chunks to have an overlap of 3 notes (first solving for \texttt{cf 0} to \texttt{cf 7}, then \texttt{cf 5} to \texttt{cf 12} and so on). At the same time, the intervals found for the last 3 steps were written as facts to the Dusa code of the next chunk's solver such as \begin{verbatim}
+    cp 5 is fifth.
+    cp 6 is third.
+    cp 7 is third.
+\end{verbatim} to prevent duplicate solutions for overlapping steps.
+
+\paragraph{Specialized Solvers}
+We used three different Dusa codes to generate solutions to the beginning, middle, and end chunks to account for the ending cadence rule, the starting interval rule, and the "No Unison in Middle" rules.
+
+%\paragraph{}
+%We also called Dusa asynchronously in JavaScript to enable interruptions to calls of \texttt{dusa.solve()}. When Dusa generates a solution, a common problem was when it entered a sub-optimal branch during its deductions, it got stuck there. We worked around this by interrupting the generation after a set time (2s) and rerunning it for the set number of attempts (10). 2s were chosen since the typical time Dusa takes to find a solution for an 8 note piece is under 0.5ms. Also, normally for another language, rerunning the exact solver with the exact input would yield the same results, but this is where Dusa's undeterministic nature comes in handy.
+
+The results of this implementation were generally good. While it sometimes got stuck on a random chunk before creating a full solution, it was quite fast when it did find a solution. Further improvements can be made to this approach, but since the normal optimizations made the code handle more than 20 notes comfortably, and taking care of the longer pieces is going a little out of scope for this project, we decided to move on to the validation of generated solutions.
+
+\subsection{Validating the Solution}
+To test the solutions, we wrote a validation code in JavaScript that checks the solutions obtained from Dusa. The rules of counterpoint were rewritten in JavaScript for testing. Then, solutions are iterated using 
+\begin{verbatim}
+    const iterator = dusa.solve();
+    const result = iterator.next();
+\end{verbatim}, and various values from the solution are fetched using \texttt{solution.lookup()} and compared with their expected values. The solutions have passed the tests we conducted.
+
