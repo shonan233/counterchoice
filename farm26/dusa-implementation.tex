@@ -179,21 +179,22 @@ leap T :-
 
 Note that both \texttt{leap} and \texttt{chordMovement} introduce new facts in their premises, but we will not show them here for space constraints. The \texttt{intervalCP} refers to the absolute distance between two \texttt{cpNote} values.
 
-\paragraph{No more than 3 leaps in a row}
+
+\paragraph{No Multiple Large Leaps in the Same Direction}
 \begin{verbatim}
-judgeCP T4 I is bad :-
-  cf T is _,
+judgeCP T2 I is bad :-
+  time T,
   (suc T) is T1,
   (suc T1) is T2,
-  (suc T2) is T3,
-  (suc T3) is T4,
-  cp T4 is I,
-  leap (T1),
-  leap (T2),
-  leap (T3),
-  leap (T4).
+  cp T2 is I,
+  largeLeap (T1),
+  largeLeap (T2),
+  movement (cpNote T) (cpNote T1) is up,
+  movement (cpNote T1) (cpNote T2) is up.
 \end{verbatim}
-As seen in this rule, to evaluate any given \texttt{cp T} as \texttt{good} or \texttt{bad}, the values of next 3 consecutive \texttt{cp}s need to be computed; this is what is meant by the new layer of complexity mentioned before.
+This is the rule which forbids more than two large leaps in counterpoint melody moving downward. Another version of the rule where the the last two premises check for upward motion is also implemented to complete the check for the same direction.
+
+As seen in this rule, to evaluate any given \texttt{T I} pair as \texttt{good} or \texttt{bad}, the values of next 2 consecutive \texttt{cpNote}s in addition to the value of \texttt{cpNote T} need to be computed; this is what is meant by the new layer of complexity mentioned before.
 
 
 
