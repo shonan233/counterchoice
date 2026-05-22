@@ -2,6 +2,7 @@
 
 - counterpoint58_new_rules.du is updated with the corrected rules, except the "directFifth/directOctave".
 - counterpoint_forbid.du is rewritten without using judgeCP, and it is default solver to be used in the JS files currently.
+- counterpoint_opt.du is a rewritten version of counterpoint_forbid, and is more efficient
 - divide-and-conquer folder contains the divide and conquer approach in JS, and three seperate Dusa files for the start, middle, and the end of the piece. I hope the parsing issue is solved and it can be run as:
 ```
 node .\divide_and_generate.mjs
@@ -12,6 +13,8 @@ node .\divide_and_generate.mjs
 node .\testing.mjs
 ```
 
+- "benchmark.mjs" runs any number of Dusa programs repeatedly on the same song to compare performance.
+- "regression-test.mjs" compares two Dusa programs to check whether they accept each others' solutions.
 
 
 # To Test It Out
@@ -27,7 +30,7 @@ node .\out2mid.mjs
 
 - I included one generated output named "example_solution.mid", and its text format as "example_solution.txt".
 
-- Below is the input from "song.du" to test in "dusa.rocks" for convenience:
+- Example songs to test on include "song-16.du" and "song-46.du" (below), which are derived from "song.du":
 
 ```
 cf 46 is 0.
