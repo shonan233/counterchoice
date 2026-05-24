@@ -89,7 +89,9 @@ export default function App() {
       <h1>CounterChoice Composer</h1>
 
       <section className={style.controls}>
-        <label htmlFor="cf">Enter your cantus firmus:</label>
+        <label>
+          Enter your cantus firmus, shift-click to edit counterpoint:
+        </label>
         <Notes
           className={style.mainNotes}
           cf={cf}
@@ -103,12 +105,14 @@ export default function App() {
           onCpChange={(newCp) => setFrozenCp(newCp)}
         />
 
+        <p>Select forbidden scenarios</p>
         <ul className={style.rules}>
           {RULES.map((r) => (
             <li key={r}>
               <span className={style.ruleCheckbox}>
                 <input
                   name={r}
+                  id={r}
                   type="checkbox"
                   checked={enabledRules[r]}
                   title={r}
@@ -121,6 +125,22 @@ export default function App() {
             </li>
           ))}
         </ul>
+
+        <details>
+          <summary>Instructions</summary>
+          <p>
+            Each row represents a constant note. Each column is a time step.
+            Click on a note for each time. All notes for the cantus firmus must
+            be filled to be able to solve. Shift-clicking will fix the
+            counterpoint note for that time, and restrict solutions to only
+            those containing your specified notes. Overconstraining the
+            counterpoint might result in no solutions being possible.
+          </p>
+          <p>
+            The checkboxes control which scenarios are forbidden. Having all
+            boxes selected ensures a valid counterpoint track.
+          </p>
+        </details>
 
         <div className={style.underNotes}>
           <button
