@@ -1,4 +1,10 @@
-import type { Freeze, Note, Rule, WorkerInput, WorkerResponse } from "./util";
+import type {
+  Freeze,
+  Note,
+  RuleName,
+  WorkerInput,
+  WorkerResponse,
+} from "./util";
 
 type Solution = Extract<WorkerResponse, { type: "solution" }>["payload"];
 
@@ -11,7 +17,7 @@ export interface SolveHandle {
 export async function solve(
   cf: Note[],
   frozen: Freeze[],
-  rules: readonly Rule[],
+  rules: readonly RuleName[],
   signal?: AbortSignal,
 ): Promise<SolveHandle> {
   signal?.throwIfAborted();

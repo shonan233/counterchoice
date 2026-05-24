@@ -3,19 +3,25 @@ import type { Fact, Term } from "dusa";
 export type Note = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 12 | 13 | 14;
 
 export const RULES = [
-  "cadenceNotThirdUnison",
-  "cadenceNotSixthOctave",
-  "directOctave",
-  "directFifth",
-  "parallelOctave",
-  "parallelFifth",
-  "invalidCPMovement",
-  "twoLargeLeapsUp",
-  "twoLargeLeapsDown",
-  "fourLeaps",
+  { type: "forbid", name: "unisoninMiddle", arity: 1 },
+  { type: "forbid", name: "directOctave", arity: 1 },
+  { type: "forbid", name: "directFifth", arity: 1 },
+  { type: "forbid", name: "parallelOctave", arity: 1 },
+  { type: "forbid", name: "parallelFifth", arity: 1 },
+  { type: "forbid", name: "twoLargeLeapsUp", arity: 1 },
+  { type: "forbid", name: "twoLargeLeapsDown", arity: 1 },
+  { type: "forbid", name: "invalidCPMovement", arity: 1 },
+  { type: "forbid", name: "fourLeaps", arity: 1 },
+  { type: "demand", name: "cadenceStepwiseContrary", arity: 0 },
 ] as const;
 
-export type Rule = (typeof RULES)[number];
+export type Rule = {
+  type: "forbid" | "demand";
+  name: string;
+  arity: number;
+};
+
+export type RuleName = (typeof RULES)[number]["name"];
 
 export type Freeze = [number, Note];
 
@@ -24,7 +30,7 @@ export type WorkerInput = {
   payload: {
     cf: Note[];
     frozen: Freeze[];
-    rules: readonly Rule[];
+    rules: readonly RuleName[];
   };
 };
 

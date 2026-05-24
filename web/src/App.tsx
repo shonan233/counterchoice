@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
   RULES,
-  type Rule,
   type Note,
   type WorkerSolution,
   type Freeze,
+  type RuleName,
 } from "./util";
 import { solve } from "./dusa.service";
 import Solution from "./Solution";
@@ -24,8 +24,11 @@ export default function App() {
     solver: string;
     dusaInput: string;
   } | null>(null);
-  const [enabledRules, setEnabledRules] = useState<Record<Rule, boolean>>(
-    Object.fromEntries(RULES.map((r) => [r, true])) as Record<Rule, boolean>,
+  const [enabledRules, setEnabledRules] = useState<Record<RuleName, boolean>>(
+    Object.fromEntries(RULES.map((r) => [r.name, true])) as Record<
+      RuleName,
+      boolean
+    >,
   );
   const [solvedCf, setSolvedCf] = useState<(Note | null)[] | null>(null);
 
@@ -64,7 +67,7 @@ export default function App() {
           .filter((n) => n !== null),
         Object.entries(enabledRules)
           .filter(([, on]) => on)
-          .map(([name]) => name as Rule),
+          .map(([name]) => name as RuleName),
         ctrl.signal,
       );
       setSolverInput({ solver, dusaInput });
@@ -108,19 +111,22 @@ export default function App() {
         <p>Select forbidden scenarios</p>
         <ul className={style.rules}>
           {RULES.map((r) => (
-            <li key={r}>
+            <li key={r.name}>
               <span className={style.ruleCheckbox}>
                 <input
-                  name={r}
-                  id={r}
+                  name={r.name}
+                  id={r.name}
                   type="checkbox"
-                  checked={enabledRules[r]}
-                  title={r}
+                  checked={enabledRules[r.name]}
+                  title={r.name}
                   onChange={(e) =>
-                    setEnabledRules({ ...enabledRules, [r]: e.target.checked })
+                    setEnabledRules({
+                      ...enabledRules,
+                      [r.name]: e.target.checked,
+                    })
                   }
                 />
-                <label htmlFor={r}>{r}</label>
+                <label htmlFor={r.name}>{r.name}</label>
               </span>
             </li>
           ))}

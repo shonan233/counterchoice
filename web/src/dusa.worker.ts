@@ -5,16 +5,26 @@ import {
   type WorkerInput,
   type WorkerResponse,
 } from "./util";
-import SOLVER from "./counterpoint_forbid.du?raw";
+import SOLVER from "./counterpoint_opt.du?raw";
 
 function solve({
   cf,
   frozen,
-  rules,
+  rules: ruleNames,
 }: (WorkerInput & { type: "solve" })["payload"]) {
   console.debug("solving with notes", cf);
+
+  const rulesConfig = ruleNames
+    .map((name) => RULES.find((rule) => rule.name === name))
+    .filter((rule) => rule !== undefined)
+    .map(({ type, name, arity }) => {
+      const args = Array.from({ length: arity }, () => "_").join(" ");
+      return `#${type} ${name}${args.length > 0 ? " " : ""}${args}.`;
+    })
+    .join("\n");
+
   const dusaInput =
-    rules.map((r) => `#forbid ${r} _ _.`).join("\n") +
+    rulesConfig +
     "\n" +
     cf.map((n, i) => `cf ${i} is ${n}.`).join("\n") +
     "\n" +
@@ -39,7 +49,7 @@ function solve({
 
     const violations = solution
       .facts()
-      .filter((fact) => (RULES as readonly string[]).includes(fact.name));
+      .filter((fact) => RULES.map((r) => r.name as string).includes(fact.name));
 
     postMessage({
       type: "solution",
