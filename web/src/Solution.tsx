@@ -9,6 +9,7 @@ export interface SolutionProps {
   cf: Note[];
   cp: Note[];
   facts: Fact[];
+  violations: Fact[];
   id: number;
   onSelect: () => void;
 }
@@ -18,6 +19,7 @@ export default function Solution({
   cp,
   id,
   facts,
+  violations,
   onSelect,
 }: SolutionProps) {
   const midi = tracksToMidi(cf, cp);
@@ -57,6 +59,16 @@ export default function Solution({
       <button type="button" onClick={onSelect}>
         Select
       </button>
+      {violations.length !== 0 && (
+        <details className={style.violations}>
+          <summary>Counterpoint violations</summary>
+          <ul>
+            {violations.map((v, i) => (
+              <li key={i}>{factToString(v)}</li>
+            ))}
+          </ul>
+        </details>
+      )}
       <details>
         <summary>
           See generated facts
@@ -71,8 +83,8 @@ export default function Solution({
           </button>
         </summary>
         <ul>
-          {factsStrings.map((s) => (
-            <li>{s}</li>
+          {factsStrings.map((s, i) => (
+            <li key={i}>{s}</li>
           ))}
         </ul>
       </details>
