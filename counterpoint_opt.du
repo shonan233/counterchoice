@@ -44,16 +44,28 @@ cpMovement T is (minus N1 N2) :-
 leap T :-
   cpMovement T > 1.
 
-#lazy similarMovement
-similarMovement T :-
+#lazy directMotion
+directMotion T :-
   cf T is _,
   cf (suc T) > cf T,
   cpNote (suc T) > cpNote T.
 
-similarMovement T :-
+directMotion T :-
   cf T is _,
   cf (suc T) < cf T,
   cpNote (suc T) < cpNote T.
+
+
+# ##### No unisons in the the middle #####
+# Unison is not allowed except the first and the last interval.
+
+#forbid unisoninMiddle _.
+
+unisoninMiddle T :-
+  cf T is _,
+  T > 0,
+  T < length,
+  cp T is unison.
 
 
 # ##### Valid start/ending intervals #####
@@ -91,13 +103,13 @@ cadenceStepwiseContrary :-
 directOctave T :-
   cf T is _,
   cp (suc T) is octave,
-  similarMovement T,
+  directMotion T,
   leap T.
 
 directFifth T :-
   cf T is _,
   cp (suc T) is fifth,
-  similarMovement T,
+  directMotion T,
   leap T.
 
 
