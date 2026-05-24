@@ -199,7 +199,11 @@ export default function App() {
       {error && <pre>{String(error)}</pre>}
 
       {done && cf === solvedCf && solutions.length === 0 && (
-        <p>No solutions found.</p>
+        <p>
+          No solutions found. Maybe your input cantus firmus is invalid! Try
+          unchecking the <code>cadenceStepwiseContrary</code> box to disable
+          this check.
+        </p>
       )}
 
       <ul className={style.solutions}>
