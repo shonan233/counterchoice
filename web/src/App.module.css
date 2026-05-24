@@ -1,8 +1,9 @@
 .controls {
-  display: flex;
+  /* display: flex;
   flex-direction: column;
   padding: 2rem;
-  gap: 0.5rem;
+  gap: 0.5rem; */
+  padding: 2rem;
 }
 
 .solutions {
@@ -13,6 +14,10 @@
   gap: 1rem;
   justify-content: space-between;
   padding: 0;
+
+  & > li {
+    max-width: 30vw;
+  }
 }
 
 .underNotes {
@@ -35,9 +40,13 @@
 
 .rules {
   list-style: none;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  gap: 0.25rem 2rem;
   justify-content: center;
+
+  & > li {
+    width: fit-content;
+  }
 }

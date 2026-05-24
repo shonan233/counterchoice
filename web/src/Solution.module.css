@@ -20,10 +20,14 @@
 }
 
 .notes {
-  width: 30vw;
+  width: min(100%, 30vw);
   aspect-ratio: 4 / 1;
 }
 
 .factCopy {
   margin: 0 0.25rem;
+}
+
+.violations {
+  color: orange;
 }
