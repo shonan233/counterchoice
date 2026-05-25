@@ -20,7 +20,7 @@ console.log("------")
 console.log(inputCf);
 
 // then concat that parsed input to the solver text as "together.du"
-let solverText = fs.readFileSync("counterpoint_forbid.du", {encoding:"utf8"})
+let solverText = fs.readFileSync("counterpoint_opt.du", {encoding:"utf8"})
 .split(/\r?\n/)
 .join('\n');
 
@@ -86,23 +86,11 @@ else
 
 function check_starts_with_unison_or_octave(solution)
 {
-  for (const [T, I] of solution.lookup('cp')) 
-    {
-    console.log("T =", T, "I =", I, "type:", typeof I);
-    //console.log("T =", T, "type:", typeof T);
-    if (T === 0) 
-    {
-      if (I.name === 'unison' || I.name === 'octave') 
-      {
-        console.log(`Passed test: starts with unison or octave (got interval ${I.name})`);
-        return true;
-      }
-      else 
-      {
-        console.log(`Failed test: starts with unison or octave (got interval ${I.name})`);
-        return false;
-      }
-    }
+  const I = solution.get('cp', 0); 
+  if (I.name === 'unison' || I.name === 'octave') 
+  {
+    console.log(`Passed test: starts with unison or octave (got interval ${I.name})`);
+    return true;
   }
   console.log("Failed test: starts with unison or octave");
   return false;
@@ -110,21 +98,11 @@ function check_starts_with_unison_or_octave(solution)
 
 function check_ends_with_unison_or_octave(solution)
 {
-  for (const [T, I] of solution.lookup('cp')) 
-    {
-    if (T === cfLength) 
-      {
-        if (I.name === 'unison' || I.name === 'octave') 
-        {
-          console.log(`Passed test: ends with unison or octave (got interval ${I.name})`);
-          return true;
-        }
-        else 
-        {
-          console.log(`Failed test: ends with unison or octave (got interval ${I.name})`);
-          return false;
-        }
-      }
+  const I = solution.get('cp', cfLength);
+  if (I.name === 'unison' || I.name === 'octave') 
+  {
+    console.log(`Passed test: ends with unison or octave (got interval ${I.name})`);
+    return true;
   }
   console.log("Failed test: ends with unison or octave");
   return false;
@@ -132,14 +110,9 @@ function check_ends_with_unison_or_octave(solution)
 
 function check_ends_with_cadence(solution)
 {
-  for (const [T, val] of solution.lookup('cf'))
-  {
-    console.log(`cf ${T} is ${val}`);
-  }
-  for (const [T, I] of solution.lookup('cp')) 
-  {
-    console.log(`cp ${T} is ${I.name}`);
-    if ((T === cfLength) && (cfLength > 0))
+    const T = cfLength;
+    const I = solution.get('cp', T);
+    if (T > 0)
     {
       const prevI = solution.get('cp', T - 1);
       const cp = solution.get('cpNote', T);
@@ -148,21 +121,20 @@ function check_ends_with_cadence(solution)
       const prevcf = solution.get('cf', T - 1);
       console.log(`cp len=${T} is ${cp}, cp (len-1) is ${prevcp}, I len is ${I.name}, I (len-1) is ${prevI.name}, cf len is ${cf}, cf (len-1) is ${prevcf}`);
       if ((I.name === 'octave') 
-      && (prevI.name === 'sixth')
-      && ((cp-prevcp)>0) && ((cf-prevcf)<0) )
+        && (prevI.name === 'sixth')
+        && ((cp-prevcp)===1) && ((cf-prevcf)===(-1)) )
       {
         console.log("Passed test: ends with cadence of type 6th to octave");
         return true; 
       }
       if ((I.name === 'unison') 
-      && (prevI.name === 'third')
-      && ((cp-prevcp)<0) && ((cf-prevcf)>0) )
+        && (prevI.name === 'third')
+        && ((cp-prevcp)===(-1)) && ((cf-prevcf)===1) )
       {
           console.log("Passed test: ends with cadence of type 3rd to unison");
           return true; 
       }
     }
-  }
   console.log("Failed test: Does not end with a cadence");
   return false;
 }
@@ -208,13 +180,13 @@ function check_parallel_octaves(solution)
 
 function check_validCPmove(solution)
 {
-  for (const [T, val] of solution.lookup('intervalCP')) 
+  for (const [T, val] of solution.lookup('cpMovement')) 
   {
     console.log("val =", val, "type:", typeof val);
-    console.log(`At T=${T}, intervalCP is ${val}`);
+    console.log(`At T=${T}, cpMovement is ${val}`);
     if (val === 0 || val > 5)
     {
-      console.log(`Failed test: Invalid CP move at T=${T} (intervalCP is ${val})`);
+      console.log(`Failed test: Invalid CP move at T=${T} (cpMovement is ${val})`);
       return false;
     }
   }
@@ -225,21 +197,21 @@ function check_validCPmove(solution)
 
 function check_consecutive_large_leaps(solution)
 {
-  for (const [T, val] of solution.lookup('intervalCP')) 
+  for (const [T, val] of solution.lookup('cpMovement')) 
     {
-      console.log(`At T=${T}, intervalCP is ${val}`);
-      if ((val === 4 || val === 5) && T > 1) 
+      console.log(`At T=${T}, cpMovement is ${val}`);
+      if ((val === 4 || val === 5) && T < (cfLength - 1)) 
       {
-        const prevVal = solution.get('intervalCP', T - 1);
+        const nextVal = solution.get('cpMovement', T + 1);
         const cpNote_T = solution.get('cpNote', T);
-        const cpNote_T1 = solution.get('cpNote', T - 1);
-        const cpNote_T2 = solution.get('cpNote', T - 2);
-        if ((prevVal === 4 || prevVal === 5) 
+        const cpNote_T1 = solution.get('cpNote', T + 1);
+        const cpNote_T2 = solution.get('cpNote', T + 2);
+        if ((nextVal === 4 || nextVal === 5) 
         && 
         (( (cpNote_T > cpNote_T1) && (cpNote_T1 > cpNote_T2)) 
           || ( (cpNote_T < cpNote_T1) && (cpNote_T1 < cpNote_T2)) ))
         {
-          console.log(`Failed test: Consecutive same direction large leaps at T=${T} and T=${T-1} (intervalCP values ${val} and ${prevVal}) and cpNotes ${cpNote_T}, ${cpNote_T1}, ${cpNote_T2}`);
+          console.log(`Failed test: Consecutive same direction large leaps at T=${T} and T=${T+1} (cpMovement values ${val} and ${nextVal}) and cpNotes ${cpNote_T}, ${cpNote_T1}, ${cpNote_T2}`);
           return false;
         }
       }
@@ -250,17 +222,17 @@ function check_consecutive_large_leaps(solution)
 
 function check_more_than_3_leaps(solution)
 {
-  for (const [T, val] of solution.lookup('intervalCP')) 
+  for (const [T, val] of solution.lookup('cpMovement')) 
     {
-      console.log(`At T=${T}, intervalCP is ${val}`);
-      if ((val>1) && T > 3) 
+      console.log(`At T=${T}, cpMovement is ${val}`);
+      if ((val>1) && T < (cfLength - 2)) 
       {
-        const prevVal1 = solution.get('intervalCP', T - 1);
-        const prevVal2 = solution.get('intervalCP', T - 2);
-        const prevVal3 = solution.get('intervalCP', T - 3);
-        if ((prevVal1 > 1) && (prevVal2 > 1) && (prevVal3 > 1))
+        const nextVal1 = solution.get('cpMovement', T + 1);
+        const nextVal2 = solution.get('cpMovement', T + 2);
+        const nextVal3 = solution.get('cpMovement', T + 3);
+        if ((nextVal1 > 1) && (nextVal2 > 1) && (nextVal3 > 1))
         {
-          console.log(`Failed test: No more than 3 consecutive leaps at T=${T} with cpNotes ${val}, ${prevVal1}, ${prevVal2}, ${prevVal3}`);
+          console.log(`Failed test: No more than 3 consecutive leaps at T=${T} with cpNotes ${val}, ${nextVal1}, ${nextVal2}, ${nextVal3}`);
           return false;
         }
       }
@@ -277,7 +249,7 @@ function check_direct_fifth_and_octave(solution)
       if ((I.name === 'fifth' || I.name === 'octave') 
       && (T > 0) ) 
       {
-        const val = solution.get('intervalCP', T); 
+        const val = solution.get('cpMovement', T - 1); 
         const cpNote_T = solution.get('cpNote', T);
         const cpNote_T1 = solution.get('cpNote', T - 1);
         const cfNote_T = solution.get('cf', T);
@@ -287,8 +259,8 @@ function check_direct_fifth_and_octave(solution)
         if ((movement > 0)
         && (val > 1) ) // if both voices move in the same direction and there is a jump in CP
         {
-          const leapval = solution.has('leap', T); 
-          console.log(`Failed test: Direct ${I.name} at T=${T} where intervalCP is ${val} and leap check is ${leapval}.`);
+          const leapval = solution.has('leap', T - 1); 
+          console.log(`Failed test: Direct ${I.name} at T=${T} where cpMovement is ${val} and leap check is ${leapval}.`);
           return false;
         }
         console.log(`Movement not in same direction, moving on.`);
@@ -298,12 +270,28 @@ function check_direct_fifth_and_octave(solution)
   return true;
 }
 
-
+function check_unison_in_middle(solution)
+{
+  for (const [T, I] of solution.lookup('cp')) 
+    {
+    if ((T < cfLength) && (T > 0) && (I.name === 'unison')) 
+      {
+          console.log(`Failed test: No unisons in middle (got ${I.name} at T=${T})`);
+          return false;
+      }
+  }
+  console.log("Passed test: No unisons in middle");
+  return true;
+}
 
 // main test function that runs all tests on a solution
 
 function evaluateSolution(solution)
 {
+  for (const [T, I] of solution.lookup('cp')) 
+  {
+    console.log("T =", T, `cf: ${solution.get('cf', T)} `,"I =", I, "cpNote:", solution.get('cpNote', T));
+  }
   if ( check_starts_with_unison_or_octave(solution)
      && check_ends_with_unison_or_octave(solution)
      && check_ends_with_cadence(solution)
@@ -313,6 +301,7 @@ function evaluateSolution(solution)
      && check_consecutive_large_leaps(solution)
      && check_more_than_3_leaps(solution)
      && check_direct_fifth_and_octave(solution)
+     && check_unison_in_middle(solution)
      //  
      // && add more checks here as needed
   )
