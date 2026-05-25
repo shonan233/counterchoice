@@ -84,7 +84,7 @@ function termToString(term: Term): string {
   if (term === null) {
     return "()";
   } else if (typeof term === "string") {
-    return term;
+    return `"${term}"`;
   } else if (typeof term === "boolean" || typeof term === "number") {
     return String(term);
   } else if (term.name !== null) {

@@ -29,7 +29,7 @@ function solve({
     cf.map((n, i) => `cf ${i} is ${n}.`).join("\n") +
     "\n" +
     frozen.map(([idx, n]) => `at ${idx} 1 is ${n}.`).join("\n") +
-    `\nlength is ${cf.length}.\n`;
+    `\nlength is ${cf.length - 1}.\n`;
 
   postMessage({
     type: "input",
@@ -47,9 +47,11 @@ function solve({
     const cf = track(0);
     const cp = track(1);
 
-    const violations = solution
-      .facts()
-      .filter((fact) => RULES.map((r) => r.name as string).includes(fact.name));
+    const violations = solution.facts().filter((fact) =>
+      RULES.filter((r) => r.type === "forbid")
+        .map((r) => r.name as string)
+        .includes(fact.name),
+    );
 
     postMessage({
       type: "solution",
