@@ -1,0 +1,78 @@
+% design goals
+% - "showing the seams", see the internal representation
+% - more immediacy, direct feeback
+% - feels like an instrument, could be used for composition / performance
+% - support itareative designing process
+% - see many possibilities at once (casual creators, mutant shopping)
+% - hand authoring and tool based generation
+
+% why, what, how, evalution
+% answer RQ2: how much can be done in Dusa vs JS
+% distribution of code, decoupling UI from solver
+% dev process, improving the prototype
+% effort between frontend and backend, join points with dusa
+
+\section{UI Implementation}
+
+\subsection{Design Goals}
+
+We want to design a UI that feels to the user like playing an instrument, and
+allows use for composing and performing musical works. We want to show immediate
+feedback to the user in order to support iteratively refining their work, with
+a combination of handmade and generated edits. Another goal is to show many
+possibilites at once, to help the user see what choices they can make, as a form
+of mutant shopping \cite{compton-casual}.
+
+\subsection{Architectural Overview}
+
+The UI is implemented as a React web app that calls out to a Dusa solver through
+a worker thread. The frontend records changes made to the inputs and spawns a
+worker, giving it the inputs: the cantus firmus, pre-defined notes on the
+counterpoint, and which rules to enforce. The main \verb|<App />| component
+keeps as state the data that gets passed to the solver.
+
+\paragraph{Notes Editor}
+The notes editor is a fully controlled input component that renders a HTML
+\verb|<canvas>| element. The interface resembles a piano roll with 14 notes and
+8 time steps. Clicking on a note will set it as the cantus firmus for that
+time step. Shift-clicking will set the counterpoint at that time (i.e., require
+that solutions contain \verb|cpNote| facts as specified).
+
+\AP{This section is pretty bare, but I feel that Jim might have more to say
+    about the implementation of the editor, as he mainly worked on it.}
+
+\paragraph{Dusa Worker}
+Since Dusa works synchronously while generating a solution, we need to offload
+the work off the main thread so that the UI can remain responsive even while
+it is working on generating solutions. To achieve this, we spawn a web worker
+that sends a message to the main thread every time a solution gets generated.
+These messages are then packaged into an async generator so that we can loop
+over the solutions with a \verb|for await ... of| loop, which can be used easily
+by JS developers who are used to asynchronous development.
+
+The worker takes as input the cantus firmus and the specified notes of the
+counterpoint, as well as the rules that should be enabled. It generates strings
+corresponding to the relevant \verb|#demand| and \verb|#forbid| rules, and the
+facts for specifying notes. Upon generating a solution, it transforms the raw
+facts back into the raw notes for each track. To facilitate users being able to
+see into the internals of the program, we also pass along the final generated
+Dusa programs, and all facts that were generated as part of the solution:
+specifcially flagging facts that denote a solution being an invalid
+counterpoint. The raw information is not used, but is simply passed along to the
+UI to offer the user a look inside the system.
+
+\subsection{Evaluation}
+
+\paragraph{Development Process}
+Developing the UI felt like any other web application, treating the Dusa worker
+system as a backend and the rendering code as the frontend, despite all the
+execution being clientside. The \verb|solve| function was implemented as if it
+were some backend API call, and it returns information about the query as well
+as streams the solutions through a generator as previously mentioned. This
+represents the only point at which the web code interfaces with a Dusa program
+or its API.
+
+The code to connect with Dusa only needs to be implemented once, and it allows
+for effectively arbitrarily complex UI to be built around it, calling on the
+solver whenever required. The segmented nature allows much more flexibility in
+implementing other interface concepts without making many changes to the worker.
