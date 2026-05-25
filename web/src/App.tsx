@@ -200,9 +200,9 @@ export default function App() {
 
       {done && cf === solvedCf && solutions.length === 0 && (
         <p>
-          No solutions found. Maybe your input cantus firmus is invalid! Try
-          unchecking the <code>cadenceStepwiseContrary</code> box to disable
-          this check.
+          No solutions found. Ensure your cantus firmus ends with a single step
+          change. Or, disable the checkbox for{" "}
+          <code>cadenceStepwiseContrary</code>.
         </p>
       )}
 
