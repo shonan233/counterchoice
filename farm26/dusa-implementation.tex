@@ -320,26 +320,31 @@ An early version of our Dusa code based around a monolithic \verb|judgeCP T I is
 While fine-tuning the implementation, we found it helpful to write a simple script which measures the amount of time it takes Dusa to compute a first solution for the same cantus firmus across multiple trials, given that Dusa is nondeterministic. We also experimented with setting the RNG seed at the start of this script, so that the benchmark itself would return the same results across multiple runs.
 
 
-
 \subsection{Alternative Approach: Divide-and-Conquer}
+Although our implementation is capable of producing solutions for cantus firmi of up to 50 notes, the exponential nature of the search space means it eventually reaches practical limits for longer pieces. To handle such cases, we developed an alternative divide-and-conquer approach using JavaScript where the cantus firmus is divided into overlapping segments based on index boundaries, each one is solved independently by the Dusa solver, and the results are assembled into a complete counterpoint line. This approach also has a natural musical motivation; composers often work phrase by phrase rather than treating every note with equal global importance.
 
-\CA{I did not touch this subsection. I think it makes sense to discuss divide-and-conquer here, but the text needs to be adjusted to fit the surroundings.}
+\paragraph{Segment Indices}
 
-To circumvent/work around the bottleneck of 12 notes, the idea we came up with is to divide the cantus firmus into smaller chunks, solve them, and then assemble those solutions together to get the final solution. This divide and conquer approach has the advantage of resembling how humans compose counterpoint for specific melody parts and put them together, instead of treating each note and phrase with the same importance, as well as the advantage of bypassing the large search space.
-
+The solver starts by deciding on the indices of the cantus firmus line to be divided into segments. Segment and overlap size are defined using \verb|CHUNK_SIZE| and \verb|OVERLAP| respectively, which are set to be 10 and 4. For each segment until the last, indices from the starting index to the starting index plus \verb|CHUNK_SIZE| are selected, and the next segment's starting index is incremented by $\verb|CHUNK_SIZE|-\verb|OVERLAP|$ (e.g. the first segment is [0-9], the second one is [6-15]). When remaining indices are fewer than \verb|OVERLAP|, they are added into the last segment's indices to prevent creating a short segment at the end. Later, cantus firmus notes of the selected indices are extracted from the input, and the solver is run on each segment separately using local indexing.
 
 \paragraph{Overlapping Segments}
-Checks for the consecutive notes need a special treatment in this method to see that the end and starting \texttt{cp}s are compatible in the chunks. To tackle this, after creating the solution for the first chunk, we selected the consecutive chunks to have an overlap of 3 notes (first solving for \texttt{cf 0} to \texttt{cf 7}, then \texttt{cf 5} to \texttt{cf 12} and so on). At the same time, the intervals found for the last 3 steps were written as facts to the Dusa code of the next chunk's solver such as \begin{verbatim}
-  cp 5 is fifth.
-  cp 6 is third.
-  cp 7 is third.
-\end{verbatim} to prevent duplicate solutions for overlapping steps.
+
+Horizontal constraints spanning consecutive time steps require special care at segment boundaries. The overlap size, \verb|OVERLAP| is chosen to be 4 to ensure consecutive segments abide by the \emph{no more than three leaps} rule. Since the predicate \verb|fourLeaps| checks the next time steps up to \verb|T+4|, we insert the \verb|cp| values found by the solver for segment \verb|i+1| to the end of the input as closed facts directly into Dusa solver for segment \verb|i|. The order of calling the solver is from the last segment to the first. 
+\begin{verbatim}
+for (let i = 0; i < fixedCp.length; i++) {
+    inputCf += `cp ${fixedCpStartLocal + i} is
+    ${fixedCp[i]}.\n`;
+}
+\end{verbatim}
+
+Writing these as closed facts prevents the solver from reconsidering those steps and avoids duplicate solutions in the overlapping region.
 
 \paragraph{Specialized Solvers}
-We used three different Dusa codes to generate solutions to the beginning, middle, and end chunks to account for the ending cadence rule, the starting interval rule, and the "No Unison in Middle" rules.
 
-%\paragraph{}
-%We also called Dusa asynchronously in JavaScript to enable interruptions to calls of \texttt{dusa.solve()}. When Dusa generates a solution, a common problem was when it entered a sub-optimal branch during its deductions, it got stuck there. We worked around this by interrupting the generation after a set time (2s) and rerunning it for the set number of attempts (10). 2s were chosen since the typical time Dusa takes to find a solution for an 8 note piece is under 0.5ms. Also, normally for another language, rerunning the exact solver with the exact input would yield the same results, but this is where Dusa's undeterministic nature comes in handy.
+Because certain constraints apply only at specific positions in the melody, namely the starting and ending interval rules, prohibition on unisons in the middle, and the cadence rule, we adapted \texttt{counterpoint_opt.du} into three variant Dusa solvers for the beginning, middle, and ending segments respectively, each enforcing only the constraints appropriate to its position.
 
-The results of this implementation were generally good. While it sometimes got stuck on a random chunk before creating a full solution, it was quite fast when it did find a solution. Further improvements can be made to this approach, but since the normal optimizations made the code handle more than 20 notes comfortably, and taking care of the longer pieces is going a little out of scope for this project, we decided to move on to the validation of generated solutions.
+Calls to the Dusa solver is made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from \verb|child_process| module to enable interruptions if no solutions are found. Maximum number of attempts per segment, and timeout limit is set to 5 and 2000ms respectively.
 
+\paragraph{Findings}
+
+The approach performed well in practice, finding solutions to given cantus firmi almost instantly regardless of length. However, the current implementation does not employ a backtracking mechanism, which means the main failure mode is that the solver occasionally gets stuck on a random segment. Although very promising, due to the optimizations described in Section~\ref{ssec:dusa-code} raising the practical limit of the standard implementation to close to 50 notes, we did not pursue this direction further.
