@@ -137,11 +137,27 @@ TODO
 
 \subsection{Architectural Overview}
 
+
 The UI is implemented as a React web app that calls out to a Dusa solver through
-a worker thread. The frontend records changes made to the inputs and spawns a
-worker, giving it the inputs: the cantus firmus, pre-defined notes on the
-counterpoint, and which rules to enforce. The main \verb|<App />| component
+a worker thread. The execution is entirely client-side, but
+architecturally we can think of the Dusa worker as the backend and
+the rendering code as a frontend, appropriately decoupled.
+
+
+The frontend records changes made to the inputs, including
+the cantus firmus, hand-selected counterpoint notes, and 
+which rules to enforce. It  
+appends the corresponding text to the Dusa program fed as an input to the
+solver.
+The main \verb|<App />| component
 keeps as state the data that gets passed to the solver.
+The Dusa API's \verb|solve| function returns information about the query as
+well as streams the solutions through a generator. This represents the only
+point at which the web code interfaces with a Dusa program or its API.
+
+
+% TODO: something about how the toggled check marks and
+% hand-chosen facts are represented internally? maybe above.
 
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
@@ -163,18 +179,4 @@ specifcially flagging facts that denote a solution being an invalid
 counterpoint. The raw information is not used, but is simply passed along to the
 UI to offer the user a look inside the system.
 
-\subsection{Evaluation}
 
-\paragraph{Development Process}
-Developing the UI felt like any other web application, treating the Dusa worker
-system as a backend and the rendering code as the frontend, despite all the
-execution being clientside. The \verb|solve| function was implemented as if it
-were some backend API call, and it returns information about the query as well
-as streams the solutions through a generator as previously mentioned. This
-represents the only point at which the web code interfaces with a Dusa program
-or its API.
-
-The code to connect with Dusa only needs to be implemented once, and it allows
-for effectively arbitrarily complex UI to be built around it, calling on the
-solver whenever required. The segmented nature allows much more flexibility in
-implementing other interface concepts without making many changes to the worker.

@@ -7,6 +7,16 @@
     \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
     \item Another feature of Dusa is the randomness in selecting a child when branching out, which causes fluctuations in the number of choices and deductions between runs. This makes it harder to reliably check the effects of alterations in the code. (Solution order is changed between runs of same code, optimization is hard to tell without reruns unless very obvious)
     \item We observed that while Dusa found solutions within a second at some attempts, it executed indefinitely possibly due to getting stuck at a bad branch somewhere along the solution steps at others
+    \item 
+      \CM{(Notes from Ari on developing the UI, moved from
+      ui-implementation.text)}
+ Developing the UI felt like any other web application, treating the Dusa worker
+ system as a backend and the rendering code as the frontend, despite all the
+ execution being clientside.
+ The code to connect with Dusa only needs to be implemented once, and it allows
+ for effectively arbitrarily complex UI to be built around it, calling on the
+ solver whenever required. The segmented nature allows much more flexibility in
+ implementing other interface concepts without making many changes to the worker.
 \end{itemize}
 
 \subsection{Possible Next Steps} % this goes into future work section I think
