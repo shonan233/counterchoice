@@ -7,21 +7,51 @@ techniques, and counterpoint is particularly well-studied because it
 has clear rules.
 Existing work represents counterpoint rules in a wide variety of ways,
 including if-then statements~\cite{schottstaedt-cp}, fuzzy
-logic~\cite{yilmaz-fuzzy}, answer set programming~\cite{boenn-asp},
+logic~\cite{yilmaz-fuzzy}, answer set programming~\cite{boenn-asp,everardo2011armin},
 and dependent and refinement types~\cite{szamozvancev-mezzo,
 cong-musictools, cong-weighted}.
 These approaches all guarantee the correctness of compositions, but
 their implementation does not typically come with a user interface.
 
-\paragraph{Creativity Tools}
+\paragraph{Mixed-Initiative Creativity Support Tools}
 
-There are many tools that support generation of creative content.
-As a category of creativity tools, Casual Creators~\cite{compton-casual} 
-focus on the autotelic experience of creative activities rather than
-task productivity.
+Our design of CounterChoice draws from a few closely-related genres
+of software articulated in the literature:
+\begin{itemize}
+\item Procedural content generation, which emerges from digital games,
+conceptualizes human creative activities as possibilities for
+computational simulation (e.g. for the design of game levels and
+environments); % TODO cite
+\item Mixed-initiative
+creative systems, which place procedural generation into a human
+interaction loop,
+conceptualizing human 
+users and computational systems as engaged in a {\em collaboration}
+where each can contribute ideas and content to the creative
+artifact being developed; 
+% (TODO cite)
+\item Casual Creators~\cite{compton-casual}, which
+focus on enabling the autotelic experience of creative activities rather than
+task productivity, and center users with minimal prior experience in the creative
+domain.
 The philosophy of Casual Creators has inspired tools for creating
 tile maps~\cite{carpenter-tile}, hybrid craft~\cite{graves-eloominate},
 and avatars~\cite{otto-avatar}.
-Our tool can be thought of as an instance of Casual Creators, in that
-it allows the user to exploratively compose counterpoint without
-requiring knowledge in music theory or computer science.
+\end{itemize}
+
+% Our tool's design attempts to follow this philosophy in that
+% it allows the user to exploratively compose counterpoint without
+% requiring knowledge in music theory or computer science. However,
+% the degree to which it meets the criteria must ultimately be determined
+% by observing its use by users outside its set of developers.
+
+% TODO: 
+% - describe how Counterchoice fits these frameworks
+% - discuss related work for music composition
+
+TODO: Music-specific tools for procedural generation/mixed-initiative
+creativity/casual creators
+
+TODO: logic programming/constraint solving-specific examples of the same
+
+
