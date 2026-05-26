@@ -24,7 +24,7 @@ and the software architecture and development approach.
 
 We wanted to allow, at minimum, the input of notes in a familiar and
 ergonomic notation, and the playback of generated voices as actual sound.
-We wanted to create a tight feedback loop in the 
+We wanted to create a tight feedback loop in the
 sense of ``direct manipulation'' (TODO cite)
 so that users could experience using our solver as
 part of a creative process without moving manually
@@ -32,35 +32,35 @@ between distinct pieces of software, making
 incremental changes and seeing their results with
 relative immediacy.
 We also wanted to fit some of the criteria for
-{\em casual creators}~\cite{compton-casual},
+    {\em casual creators}~\cite{compton-casual},
 specifically accessibility to users with little
 prior background in music, and the ability
 to support autotelic creativity (for its own
 sake rather than towards a productive end).
-Finally, we wanted the ability to share our work 
+Finally, we wanted the ability to share our work
 with a wider audience, motivating development for
-the web browser. 
+the web browser.
 
 There were two key areas in which we needed to make design decisions:
 \begin{enumerate}
-\item {\bf Musical interface}: independent of our use
-of Dusa, there are many possible designs for
-authoring, editing, and playback of musical compositions.
-\item {\bf Solver interface}: independent of music as an
-application domain, there are many possible designs
-for calling a solver, displaying its results, and
-letting the user navigate them and integrate them
-into their composition.
+    \item {\bf Musical interface}: independent of our use
+          of Dusa, there are many possible designs for
+          authoring, editing, and playback of musical compositions.
+    \item {\bf Solver interface}: independent of music as an
+          application domain, there are many possible designs
+          for calling a solver, displaying its results, and
+          letting the user navigate them and integrate them
+          into their composition.
 \end{enumerate}
 
-For the musical interface, we decides to adopt a 
+For the musical interface, we decides to adopt a
 hybrid instrument-composition
 tool approach, which could be incorporated into a musician's process at the
 very early stages of working out a tune, similar to how
 one might ``sketch'' a melody on a piano when first conceptualizing
 a composition that will ultimately be performed on different instruments.
 We do not intend to support music
-{\em production}, nor do we currently imagine using this
+    {\em production}, nor do we currently imagine using this
 tool to support live performance (though we have some ideas
 for how it could be extended to do so).
 Our interface takes inspiration from
@@ -79,10 +79,10 @@ the piano roll as its most prominent element.
 % composition, inspired by Beepbox (TODO cite/url),
 
 For the solver interface, we wanted to support
-the user {\em iteratively refining} their work, 
+the user {\em iteratively refining} their work,
 combining hand-authored creative decisions with
 generated solutions.
-We wanted the user to be able to see many 
+We wanted the user to be able to see many
 generated solutions at once to help them understand
 the range of choices available.
 We wanted the principles of counterpoint, and their
@@ -91,7 +91,7 @@ to be possible to inspect and toggle.
 Finally, we didn't want to just seal Dusa away
 into a black-box abstraction; we wanted to allow
 the user to ``see the seams'' of the technical
-system under the hood, e.g. by inspecting 
+system under the hood, e.g. by inspecting
 the logical representation of counterpoint rules
 and the raw predicate output of the solver.
 
@@ -109,8 +109,24 @@ and the raw predicate output of the solver.
 
 \subsection{Current Prototype}
 
+\begin{figure*}
+    \begin{minipage}[b]{0.72\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{ui.png}
+        \caption{A labelled screenshot of the CounterChoice web UI}
+        \label{fig:ui}
+    \end{minipage}
+    \hfill
+    \begin{minipage}[b]{0.25\linewidth}
+        \centering
+        \includegraphics[width=\linewidth]{solution.png}
+        \caption{An expanded view of a single solution}
+        \label{fig:solution}
+    \end{minipage}
+\end{figure*}
+
 A screenshot of the CounterChoice prototype, from the user's
-perspective, is in figure TODO. It consists of the following
+perspective, is in Figure~\ref{fig:ui}. It consists of the following
 elements:
 
 \paragraph{Notes Editor}
@@ -125,28 +141,46 @@ time step. Shift-clicking will set the counterpoint at that time.
 \AP{This section is pretty bare, but I feel that Jim might have more to say
     about the implementation of the editor, as he mainly worked on it.}
 
-\paragraph{Forbidden Scenarios}
-TODO
+\paragraph{Enabled Rules}
+The UI includes a series of checkboxes, corresponding to individual rules in
+Dusa which will be used to restrict solutions when active. Having checked all
+boxes will ensure that the program generates a valid counterpoint track, but
+might also reject invalid inputs.
 
 \paragraph{Playback and Solve Buttons}
-TODO
+Below the checkboxes, the panel of buttons controls the UI operation. The play
+button will play the cantus firmus using a piano sound. The ``Solve'' button
+dispatches a Dusa worker thread to generate solutions using the current state of
+the UI. The ``Stop'' button will terminate the worker. The generated Dusa
+program is also presented to the user as a link to the online interpreter.
 
 \paragraph{Solution Grid}
-TODO
+After pressing the ``Solve'' button, solutions that were generated will be
+displayed below as shown in Figure~\ref{fig:solution}. The solution includes a
+visualization of the cantus firmus and counterpoint similar to the editor, but
+presented immutably. Below, the button panel allows the user to play it using a
+piano instrument, download it as a MIDI file, and ``select'' it for editing.
 
+Selecting a solution populates its counterpoint track as the constraints in the
+editor. The user can then make changes to it or remove some notes to generate
+another set of solutions.
+
+Under the buttons, there are one or two dropdown elements that list Dusa facts
+that were generated as part of the solution. If a solution is invalid
+counterpoint, the orange violations list will appear listing all deductions that
+resulted in this solution being invalid. In all solutions, the ``See generated
+facts'' dropdown will list {\em all} facts that were part of this solution.
 
 \subsection{Architectural Overview}
-
 
 The UI is implemented as a React web app that calls out to a Dusa solver through
 a worker thread. The execution is entirely client-side, but
 architecturally we can think of the Dusa worker as the backend and
 the rendering code as a frontend, appropriately decoupled.
 
-
 The frontend records changes made to the inputs, including
-the cantus firmus, hand-selected counterpoint notes, and 
-which rules to enforce. It  
+the cantus firmus, hand-selected counterpoint notes, and
+which rules to enforce. It
 appends the corresponding text to the Dusa program fed as an input to the
 solver.
 The main \verb|<App />| component
@@ -154,7 +188,6 @@ keeps as state the data that gets passed to the solver.
 The Dusa API's \verb|solve| function returns information about the query as
 well as streams the solutions through a generator. This represents the only
 point at which the web code interfaces with a Dusa program or its API.
-
 
 % TODO: something about how the toggled check marks and
 % hand-chosen facts are represented internally? maybe above.
@@ -178,5 +211,4 @@ Dusa programs, and all facts that were generated as part of the solution:
 specifcially flagging facts that denote a solution being an invalid
 counterpoint. The raw information is not used, but is simply passed along to the
 UI to offer the user a look inside the system.
-
 
