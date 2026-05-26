@@ -4,8 +4,8 @@ import { execFileSync } from 'child_process';
 
 
 // Configuration
-const CHUNK_SIZE = 7;
-const OVERLAP = 3;
+const CHUNK_SIZE = 10;
+const OVERLAP = 4;
 const MAX_ATTEMPTS_PER_CHUNK = 5;
 const TIMEOUT_MS = 2000;
 
@@ -25,7 +25,7 @@ function mapNote(n) {
 
 
 // solves one chunk
-function solveChunk(chunkCf, chunkType, fixedCp = null, globalStartIndex = 0) 
+function solveChunk(chunkCf, chunkType, fixedCp = null, fixedCpStartLocal = 0, globalStartIndex = 0) 
 {
     console.log(`*** Solving ${chunkType} chunk [${globalStartIndex}-${globalStartIndex + chunkCf.length - 1}] ***`);
 
@@ -41,16 +41,17 @@ function solveChunk(chunkCf, chunkType, fixedCp = null, globalStartIndex = 0)
     if (fixedCp) 
     {
         console.log(`Fixed CP values (overlap):`, fixedCp);
-        for (let i = 0; i < fixedCp.length; i++) 
+        for (let i = 0; i < fixedCp.length; i++)
         {
-            inputCf += `cp ${i} is ${fixedCp[i]}.\n`;
+          inputCf += `cp ${fixedCpStartLocal + i} is ${fixedCp[i]}.\n`;
         }
     }
 
     // selecting the Dusa file to use
     const dusaFile = (chunkType === 'start') ? 'counterpoint_start.du' :
                     (chunkType === 'end') ? 'counterpoint_end.du' :
-                    'counterpoint_mid.du';
+                    (chunkType === 'mid') ? 'counterpoint_mid.du' :
+                    'counterpoint_one_chunk.du';
 
     // then concat that parsed input to the solver text as "together.du"
     let solverText = fs.readFileSync(dusaFile, { encoding: "utf8" })
@@ -62,9 +63,9 @@ function solveChunk(chunkCf, chunkType, fixedCp = null, globalStartIndex = 0)
     .join('\n');
   
   solverText += '\n' + normalizedInputCf;
-    console.log("==== GENERATED DU FILE ====");
-    console.log(solverText);
-    console.log("==== END ====");
+    //console.log("==== GENERATED DU FILE ====");
+    //console.log(solverText);
+    //console.log("==== END ====");
     fs.writeFileSync('together.du', Buffer.from(solverText));
 
 
@@ -152,9 +153,9 @@ function solveChunk(chunkCf, chunkType, fixedCp = null, globalStartIndex = 0)
 
 
 
-
 const cfNotes = [];
-for (const cf of inputParsed.lookup('cf')) {
+for (const cf of inputParsed.lookup('cf')) 
+{
   const [time, degree] = cf;
   cfNotes[time] = degree;
 }
@@ -166,19 +167,30 @@ console.log(`CF notes:`, cfNotes);
 // Main chunking logic
 console.log("\n*** Planning Chunks ***");
 const chunks = [];
-let startIdx = 0;
+let startId = 0;
+const increment = CHUNK_SIZE - OVERLAP;
 
-while (startIdx < totalLength) 
+while (startId < totalLength) 
 {
-  const endIdx = Math.min(startIdx + CHUNK_SIZE, totalLength);
-  const chunkCf = cfNotes.slice(startIdx, endIdx);
+  let endId = Math.min(startId + CHUNK_SIZE, totalLength);
+  const remainingAfterThisChunk = totalLength - endId;
+
+  if (remainingAfterThisChunk < OVERLAP)
+  {
+    console.log(`Remaining notes (${remainingAfterThisChunk}) less than overlap size, adjusting final chunk to include all remaining notes.`);
+    endId = totalLength;
+  }
   
   let chunkType;
-  if (startIdx === 0) 
+  if (startId === 0 && endId >= totalLength)
+  {
+    chunkType = 'one_chunk';
+  }
+  else if (startId === 0) 
   {
     chunkType = 'start';
   } 
-  else if (endIdx >= totalLength)
+  else if (endId >= totalLength)
   {
     chunkType = 'end';
   }
@@ -187,15 +199,17 @@ while (startIdx < totalLength)
     chunkType = 'mid';
   }
   
-  chunks.push({ startIdx, endIdx, chunkCf, chunkType });
+  const chunkCf = cfNotes.slice(startId, endId);
+  chunks.push({ startId, endId, chunkCf, chunkType });
   
-  if (endIdx >= totalLength) break;
-  startIdx += (CHUNK_SIZE - OVERLAP);
+  if (endId >= totalLength) break;
+  startId += increment;
 }
 
 console.log(`Total chunks: ${chunks.length}`);
-for (let i = 0; i < chunks.length; i++) {
-  console.log(`  Chunk ${i}: [${chunks[i].startIdx}-${chunks[i].endIdx - 1}] (${chunks[i].chunkType})`);
+for (let i = 0; i < chunks.length; i++) 
+{
+  console.log(`  Chunk ${i}: [${chunks[i].startId}-${chunks[i].endId - 1}] (${chunks[i].chunkType})`);
 }
 
 // solving chunks sequentially
@@ -203,32 +217,28 @@ console.log("\n*** Generating Solution ***");
 const totalStartTime = Date.now();
 const allCpIntervals = {}; 
 
-for (let i = 0; i < chunks.length; i++) 
+for (let i = (chunks.length-1); i >=0; i--) 
 {
   const current_chunk = chunks[i];
   
   // Determine fixed CP values from overlap
   let fixedCp = null;
-  let solveFromIndex = 0;
+  const fixedLocalStart = current_chunk.chunkCf.length - OVERLAP;
   
-  if (i > 0) 
+  if (i < (chunks.length - 1)) 
   {
-    const overlapStart = current_chunk.startIdx;
-    const overlapEnd = chunks[i - 1].endIdx;
-    const overlapLength = overlapEnd - overlapStart;
+    const overlapStart = chunks[i + 1].startId;
     
     fixedCp = [];
-    for (let globalIdx = overlapStart; globalIdx < overlapEnd; globalIdx++) 
+    for (let globalIdx = overlapStart; globalIdx < overlapStart + OVERLAP; globalIdx++)
     {
       fixedCp.push(allCpIntervals[globalIdx]);
     }
-    
-    solveFromIndex = overlapLength;
-    console.log(`  Overlap: global [${overlapStart}-${overlapEnd - 1}] -> local [0-${overlapLength - 1}]`);
   }
   
+  
   // calling the solver
-  const cpMap = solveChunk(current_chunk.chunkCf, current_chunk.chunkType, fixedCp, current_chunk.startIdx);
+  const cpMap = solveChunk(current_chunk.chunkCf, current_chunk.chunkType, fixedCp, fixedLocalStart, current_chunk.startId);
   
   if (!cpMap)
   {
@@ -238,13 +248,14 @@ for (let i = 0; i < chunks.length; i++)
   }
   
   // Store results (only newly solved portion, not the fixed overlap)
-  for (let localIdx = solveFromIndex; localIdx < current_chunk.chunkCf.length; localIdx++) 
+  const storeUntil = (i < chunks.length - 1) ? fixedLocalStart : current_chunk.chunkCf.length;
+  for (let localId = 0; localId < storeUntil; localId++)
   {
-    const globalIdx = current_chunk.startIdx + localIdx;
-    allCpIntervals[globalIdx] = cpMap[localIdx];
+    const globalId = current_chunk.startId + localId;
+    allCpIntervals[globalId] = cpMap[localId];
   }
   
-  console.log(`  Stored intervals for global [${current_chunk.startIdx + solveFromIndex}-${current_chunk.endIdx - 1}]`);
+  console.log(`  Stored intervals for global [${current_chunk.startId}-${current_chunk.startId + storeUntil - 1}]`);
 }
 
 const totalTime = Date.now() - totalStartTime;

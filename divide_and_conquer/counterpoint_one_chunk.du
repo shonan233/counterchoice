@@ -57,24 +57,40 @@ directMotion T :-
 
 
 # ##### No unisons in the the middle #####
-# Not checking the last note for the starting chunk
+# Unison is not allowed except the first and the last interval.
 
 #forbid unisoninMiddle _.
 
 unisoninMiddle T :-
   cf T is _,
   T > 0,
+  T < length,
   cp T is unison.
 
 
-# ##### Valid starting interval #####
-# Only checking the first interval for the first chunk
+# ##### Valid start/ending intervals #####
+# The interval between the first (resp., final) given notes and the corresponding note in your
+# counter-melody must be a unison or octave.
 
 cp 0 is {unison, octave}.
+cp length is {unison, octave}.
 
 
+# ##### Stepwise contrary cadence #####
+# The cadence interval must be approached by stepwise contrary motion, i.e., the given melody and
+# the counter-melody must both move a single step in opposite directions.
 
-# Cadence rule not enforced for starting chunk
+#demand cadenceStepwiseContrary.
+
+cadenceStepwiseContrary :-
+  suc T is length,
+  suc (cf T) == cf length,
+  cpNote T == suc (cpNote length).
+
+cadenceStepwiseContrary :-
+  suc T is length,
+  cf T == suc (cf length),
+  suc (cpNote T) == cpNote length.
 
 
 # ##### Direct octaves or fifths #####

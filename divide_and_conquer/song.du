@@ -12,7 +12,7 @@
 # song 0 "ccccccccdeeeeedeefgggggg".
 
 # Twinkle twinkle little star
-ttls 0 is "ccggaagcffeeddcc". 
+ttls 0 is "ccggaagcffeeddc". 
 ttls 1 is "ggffeedc".
 song 0 (concat (ttls 0) (ttls 1) (ttls 1) (ttls 0)).
 
