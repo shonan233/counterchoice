@@ -14,14 +14,126 @@
 
 \section{UI Implementation}
 
+With the goal in mind of creating a music-specific interface for the Dusa
+counterpoint generator, we developed a web-based graphical user interface.
+The following subsections describe our design goals, the
+status of the current prototype from a user perspective,
+and the software architecture and development approach.
+
 \subsection{Design Goals}
 
-We want to design a UI that feels to the user like playing an instrument, and
-allows use for composing and performing musical works. We want to show immediate
-feedback to the user in order to support iteratively refining their work, with
-a combination of handmade and generated edits. Another goal is to show many
-possibilites at once, to help the user see what choices they can make, as a form
-of mutant shopping \cite{compton-casual}.
+We wanted to allow, at minimum, the input of notes in a familiar and
+ergonomic notation, and the playback of generated voices as actual sound.
+We wanted to create a tight feedback loop in the 
+sense of ``direct manipulation'' (TODO cite)
+so that users could experience using our solver as
+part of a creative process without moving manually
+between distinct pieces of software, making
+incremental changes and seeing their results with
+relative immediacy.
+We also wanted to fit some of the criteria for
+{\em casual creators}~\cite{compton-casual},
+specifically accessibility to users with little
+prior background in music, and the ability
+to support autotelic creativity (for its own
+sake rather than towards a productive end).
+Finally, we wanted the ability to share our work 
+with a wider audience, motivating development for
+the web browser. 
+
+There were two key areas in which we needed to make design decisions:
+\begin{enumerate}
+\item {\bf Musical interface}: independent of our use
+of Dusa, there are many possible designs for
+authoring, editing, and playback of musical compositions.
+\item {\bf Solver interface}: independent of music as an
+application domain, there are many possible designs
+for calling a solver, displaying its results, and
+letting the user navigate them and integrate them
+into their composition.
+\end{enumerate}
+
+For the musical interface, we decides to adopt a 
+hybrid instrument-composition
+tool approach, which could be incorporated into a musician's process at the
+very early stages of working out a tune, similar to how
+one might ``sketch'' a melody on a piano when first conceptualizing
+a composition that will ultimately be performed on different instruments.
+We do not intend to support music
+{\em production}, nor do we currently imagine using this
+tool to support live performance (though we have some ideas
+for how it could be extended to do so).
+Our interface takes inspiration from
+Beepbox (cite/url TODO), having just one view with
+the piano roll as its most prominent element.
+
+% There are many possible designs for such a system
+% depending on the concept for user experience: 
+% we might draw inspiration from digital audio 
+% workstations (aimed at production), 
+% classical composition software, or livecoding
+% environments like Haskore (TODO cite), geared
+% more towards performance. Ultimately we landed
+% on wanting a piano roll-like interface to support
+% sequencing and tracking for a fixed-length
+% composition, inspired by Beepbox (TODO cite/url),
+
+For the solver interface, we wanted to support
+the user {\em iteratively refining} their work, 
+combining hand-authored creative decisions with
+generated solutions.
+We wanted the user to be able to see many 
+generated solutions at once to help them understand
+the range of choices available.
+We wanted the principles of counterpoint, and their
+corresponding constraints on the generated results,
+to be possible to inspect and toggle.
+Finally, we didn't want to just seal Dusa away
+into a black-box abstraction; we wanted to allow
+the user to ``see the seams'' of the technical
+system under the hood, e.g. by inspecting 
+the logical representation of counterpoint rules
+and the raw predicate output of the solver.
+
+% In particular, we drew inspiration from the
+% {\em casual creators} literature, which identifies
+% ``mutant shopping'' as a pattern for successfully
+% joyful creative tools~\cite{compton-casual}: 
+
+% We want to design a UI that feels to the user like playing an instrument, and
+% allows use for composing and performing musical works. We want to show immediate
+% feedback to the user in order to support iteratively refining their work, with
+% a combination of handmade and generated edits. Another goal is to show many
+% possibilites at once, to help the user see what choices they can make, as a form
+% of mutant shopping \cite{compton-casual}.
+
+\subsection{Current Prototype}
+
+A screenshot of the CounterChoice prototype, from the user's
+perspective, is in figure TODO. It consists of the following
+elements:
+
+\paragraph{Notes Editor}
+The notes editor is a fully controlled input component that renders a HTML
+\verb|<canvas>| element. The interface resembles a piano roll with 14 notes and
+8 time steps. Clicking on a note will set it as the cantus firmus for that
+time step. Shift-clicking will set the counterpoint at that time.
+
+% (i.e., require
+% that solutions contain \verb|cpNote| facts as specified).
+
+\AP{This section is pretty bare, but I feel that Jim might have more to say
+    about the implementation of the editor, as he mainly worked on it.}
+
+\paragraph{Forbidden Scenarios}
+TODO
+
+\paragraph{Playback and Solve Buttons}
+TODO
+
+\paragraph{Solution Grid}
+TODO
+
 
 \subsection{Architectural Overview}
 
@@ -30,16 +142,6 @@ a worker thread. The frontend records changes made to the inputs and spawns a
 worker, giving it the inputs: the cantus firmus, pre-defined notes on the
 counterpoint, and which rules to enforce. The main \verb|<App />| component
 keeps as state the data that gets passed to the solver.
-
-\paragraph{Notes Editor}
-The notes editor is a fully controlled input component that renders a HTML
-\verb|<canvas>| element. The interface resembles a piano roll with 14 notes and
-8 time steps. Clicking on a note will set it as the cantus firmus for that
-time step. Shift-clicking will set the counterpoint at that time (i.e., require
-that solutions contain \verb|cpNote| facts as specified).
-
-\AP{This section is pretty bare, but I feel that Jim might have more to say
-    about the implementation of the editor, as he mainly worked on it.}
 
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
