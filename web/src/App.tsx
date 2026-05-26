@@ -108,7 +108,7 @@ export default function App() {
           onCpChange={(newCp) => setFrozenCp(newCp)}
         />
 
-        <p>Select forbidden scenarios</p>
+        <p>Select enabled rules</p>
         <ul className={style.rules}>
           {RULES.map((r) => (
             <li key={r.name}>
