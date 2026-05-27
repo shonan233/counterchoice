@@ -4,7 +4,8 @@ Modern logic programming languages provide a means for specifying
 search spaces with logical rules, which in turn can be used to
 procedurally generate artifacts across diverse artistic domains, including
 maps for fictional worlds, architectural structures, and musical
-compositions.  % TODO add citations
+compositions.
+\TODO{add citations}
 However, the foundation they provide is only a starting
 point for pragmatic tools that support creative practices specific
 to these domains. 
@@ -20,10 +21,21 @@ affect the audiences and practices that they
 enable.
 % , fostering shared context and vocabulary in which both programmers and artists can
 % learn from one another. 
-Our work is thus motivated by a broader goal to understand how {\em tools},
-{\em instruments}, and {\em notations} can be built atop expressive
-computational and logical foundations to better understand how those
-foundations support specific creative practices.
+
+This paper presents \emph{CounterChoice}, an experiment with using a modern
+logic programming language to generate musical compositions, as a case study in
+understanding how {\em tools}, {\em instruments}, and {\em notations} can be
+built atop expressive computational and logical foundations to better understand
+how those foundations support specific creative practices.
+
+CounterChoice consists of a graphical tool for generating first-species
+counterpoint compositions, backed by a set of declarative rules encoding the
+musical principles of first-species counterpoint, written in the finite-choice
+logic programming language \emph{Dusa} \cite{martens2025finite}. In this
+graphical tool, the user enters the first voice of the composition (the
+\emph{cantus firmus}), and our logic program automatically synthesizes a second
+voice to complete the composition (the \emph{counterpoint}).
+
 
 % In practice, attempts to formalize creative practices with logic and
 % computation, motivated by a desire to foster unification and collaboration
@@ -36,15 +48,7 @@ foundations support specific creative practices.
 % {\em instruments}, and {\em notations} atop that foundation.
 
 
-This paper presents \emph{CounterChoice}, an experiment with 
-using a modern logic programming language to generate musical compositions, as a case study.
-Our experiment has resulted in a graphical tool for generating
-first-species counterpoint compositions: the user enters the first voice of
-the composition (the \emph{cantus firmus}), and a logic program
-automatically synthesizes a second voice to complete the composition (the
-\emph{counterpoint}). We wrote the logic program, which encodes the musical
-principles of counterpoint, in the finite-choice logic programming language
-\emph{Dusa}. Developed in response to the promise and limitations of
+Developed in response to the promise and limitations of
 answer-set programming (ASP), Dusa supports constraint-intensive
 search-based generative problems like counterpoint composition, but it is
 so new that it lacks established demonstrator applications.  Counterpoint
@@ -96,6 +100,7 @@ research questions (RQs):
 \end{itemize}
 
 % TODO (CM): stopped here before editing below.
+\TODO{polish the following paragraphs later}
 
 Answering RQ1 helps us understand the adequacy of logic programming for
 formalizing harmony, i.e., whether music theory relies on principles that
@@ -109,7 +114,7 @@ application development.
 We outline the structure of the paper.
 The foundations of counterpoint are presented in Section \ref{sec:background}.
 The Dusa implementation of the CounterChoice backend is presented in Section \ref{sec:dusa-implementation}.
-The implementation of the frontend as a  web application is presented in Section \ref{sec:ui-implementation}.
+The implementation of the frontend as a web application is presented in Section \ref{sec:ui-implementation}.
 Lessons and implications are discussed in Section \ref{sec:discussion}.
 Related work is discussed in Section \ref{sec:related-work}.
 The paper concludes and outlines future work in Section \ref{sec:conclusion}.
