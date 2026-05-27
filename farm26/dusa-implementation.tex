@@ -341,7 +341,7 @@ Writing these as closed facts prevents the solver from reconsidering those steps
 
 \paragraph{Specialized Solvers}
 
-Because certain constraints apply only at specific positions in the melody, namely the starting and ending interval rules, prohibition on unisons in the middle, and the cadence rule, we adapted \texttt{counterpoint_opt.du} into three variant Dusa solvers for the beginning, middle, and ending segments respectively, each enforcing only the constraints appropriate to its position.
+Because certain constraints apply only at specific positions in the melody, namely the starting and ending interval rules, prohibition on unisons in the middle, and the cadence rule, we adapted \texttt{counterpoint\_opt.du} into three variant Dusa solvers for the beginning, middle, and ending segments respectively, each enforcing only the constraints appropriate to its position.
 
 Calls to the Dusa solver is made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from \verb|child_process| module to enable interruptions if no solutions are found. Maximum number of attempts per segment, and timeout limit is set to 5 and 2000ms respectively.
 
