@@ -137,14 +137,6 @@ The interface resembles a piano roll with 15 notes (notes C2-C4 in C-major) and 
 Clicking on a note will set it as the cantus firmus for that time step.
 Shift-clicking will set the counterpoint at that time.
 
-% (i.e., require
-% that solutions contain \verb|cpNote| facts as specified).
-
-%\AP{This section is pretty bare, but I feel that Jim might have more to say
-% about the implementation of the editor, as he mainly worked on it.}
-% JIM sez: nope! this is reasonable. (I added a cite to our inspiration.) There isn't anything surprising here.
-%  Also Ari re-engineered it to make it work with React so has as much knowledge as I do about it.
-
 \paragraph{Enabled Rules}
 The UI includes a series of checkboxes, corresponding to individual rules in
 Dusa which will be used to restrict solutions when active. Having checked all
@@ -193,8 +185,24 @@ The Dusa API's \verb|solve| function returns information about the query and
 streams the solutions through a generator. This represents the only
 point at which the web code interfaces with a Dusa program or its API.
 
-% TODO: something about how the toggled check marks and
-% hand-chosen facts are represented internally? maybe above.
+\paragraph{Data Representation}
+
+Notes are represented as numbers, the same way as in the Dusa program, for ease
+of translation. The numbering also aligns with the indices of the notes in the
+editor. The cantus firmus must be fully entered, so it is sufficient to
+represent it as an array of note values. Frozen cantus firmus positions are
+sparse and will likely have holes, so they are represented as
+\verb|[number, Note][]|, with the index and value the user selected. Each of
+these will correspond to exactly one fact included in the Dusa program (not
+including the \verb|length is N.| fact).
+
+The enabled rules checkboxes also directly correspond to state values in the
+React component: an object whose keys are the rule name shown on screen, with
+values booleans representing the state of the box. Changes to the boxes will
+update this state value. The worker includes information about whether each of
+these rules is a \verb|#forbid| or \verb|#demand|, and how many arguments it
+expects. The state of this object corresponds to which declarations are
+in the generated program.
 
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
