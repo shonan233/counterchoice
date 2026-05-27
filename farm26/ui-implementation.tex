@@ -26,7 +26,7 @@ and the software architecture and development approach.
 We wanted to allow, at minimum, the input of notes in a familiar and
 ergonomic notation, and the playback of generated voices as actual sound.
 We wanted to create a tight feedback loop in the
-sense of ``direct manipulation'' (TODO cite)
+sense of \emph{direct manipulation}~\cite{shneiderman-direct-manip}
 so that users could experience using our solver as
 part of a creative process without moving manually
 between distinct pieces of software, making
@@ -65,7 +65,7 @@ We do not intend to support music
 tool to support live performance (though we have some ideas
 for how it could be extended to do so).
 Our interface takes inspiration from
-Beepbox (cite/url TODO), having just one view with
+Beepbox~\cite{beepbox}, having just one view with
 the piano roll as its most prominent element.
 
 % There are many possible designs for such a system
@@ -92,7 +92,7 @@ to be possible to inspect and toggle.
 Finally, we didn't want to just seal Dusa away
 into a black-box abstraction; we wanted to allow
 the user to ``see the seams'' of the technical
-system under the hood, e.g. by inspecting
+system under the hood, e.g., by inspecting
 the logical representation of counterpoint rules
 and the raw predicate output of the solver.
 
@@ -131,16 +131,19 @@ perspective, is in Figure~\ref{fig:ui}. It consists of the following
 elements:
 
 \paragraph{Notes Editor}
-The notes editor is a fully controlled input component that renders an HTML
-\verb|<canvas>| element. The interface resembles a piano roll with 14 notes and
-8 time steps. Clicking on a note will set it as the cantus firmus for that
-time step. Shift-clicking will set the counterpoint at that time.
+The notes editor is a ``piano roll''-style editor, inspired by BeepBox~\cite{beepbox}.
+The current editor state is rendered to an HTML \verb|<canvas>| element.
+The interface resembles a piano roll with 15 notes (notes C2-C4 in C-major) and 8 time steps.
+Clicking on a note will set it as the cantus firmus for that time step.
+Shift-clicking will set the counterpoint at that time.
 
 % (i.e., require
 % that solutions contain \verb|cpNote| facts as specified).
 
-\AP{This section is pretty bare, but I feel that Jim might have more to say
-    about the implementation of the editor, as he mainly worked on it.}
+%\AP{This section is pretty bare, but I feel that Jim might have more to say
+% about the implementation of the editor, as he mainly worked on it.}
+% JIM sez: nope! this is reasonable. (I added a cite to our inspiration.) There isn't anything surprising here.
+%  Also Ari re-engineered it to make it work with React so has as much knowledge as I do about it.
 
 \paragraph{Enabled Rules}
 The UI includes a series of checkboxes, corresponding to individual rules in
@@ -196,20 +199,23 @@ point at which the web code interfaces with a Dusa program or its API.
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
 its work from the main thread so that the UI can remain responsive even while
-it is working on generating solutions. To achieve this, we spawn a web worker
+it is working on generating solutions. To achieve this, the interface creates a web worker
 that sends a message to the main thread every time a solution gets generated.
 These messages are then packaged into an async generator so that we can loop
-over the solutions with a \verb|for await ... of| loop, which can be used easily
-by JS developers who are used to asynchronous development.
+over the solutions with a \verb|for await ... of| loop.
+%JIM: I am wary of any "can be used easily" claims without evidence:
+%, which can be used easily by JS developers who are used to asynchronous development.
 
 The worker takes as input the cantus firmus and the specified notes of the
 counterpoint, as well as the rules that should be enabled. It generates strings
 corresponding to the relevant \verb|#demand| and \verb|#forbid| rules, and the
 facts for specifying notes. Upon generating a solution, it transforms the raw
-facts back into the raw notes for each track. To facilitate users being able to
+facts back into the notes for each track. To facilitate users being able to
 see into the internals of the program, we also pass along the final generated
 Dusa programs, and all facts that were generated as part of the solution:
 specifically flagging facts that denote a solution being an invalid
-counterpoint. The raw information is not used, but is simply passed along to the
+counterpoint.
+%JIM: I might quibble that "being displayed to the user" is, in fact, a use!
+The raw information is not used, but is simply passed along to the
 UI to offer the user a look inside the system.
 
