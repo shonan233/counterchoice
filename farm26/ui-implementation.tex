@@ -13,6 +13,7 @@
 % effort between frontend and backend, join points with dusa
 
 \section{UI Implementation}
+\label{sec:ui-implementation}
 
 With the goal in mind of creating a music-specific interface for the Dusa
 counterpoint generator, we developed a web-based graphical user interface.
@@ -53,7 +54,7 @@ There were two key areas in which we needed to make design decisions:
           into their composition.
 \end{enumerate}
 
-For the musical interface, we decides to adopt a
+For the musical interface, we decided to adopt a
 hybrid instrument-composition
 tool approach, which could be incorporated into a musician's process at the
 very early stages of working out a tune, similar to how
@@ -130,7 +131,7 @@ perspective, is in Figure~\ref{fig:ui}. It consists of the following
 elements:
 
 \paragraph{Notes Editor}
-The notes editor is a fully controlled input component that renders a HTML
+The notes editor is a fully controlled input component that renders an HTML
 \verb|<canvas>| element. The interface resembles a piano roll with 14 notes and
 8 time steps. Clicking on a note will set it as the cantus firmus for that
 time step. Shift-clicking will set the counterpoint at that time.
@@ -185,8 +186,8 @@ appends the corresponding text to the Dusa program fed as an input to the
 solver.
 The main \verb|<App />| component
 keeps as state the data that gets passed to the solver.
-The Dusa API's \verb|solve| function returns information about the query as
-well as streams the solutions through a generator. This represents the only
+The Dusa API's \verb|solve| function returns information about the query and
+streams the solutions through a generator. This represents the only
 point at which the web code interfaces with a Dusa program or its API.
 
 % TODO: something about how the toggled check marks and
@@ -194,7 +195,7 @@ point at which the web code interfaces with a Dusa program or its API.
 
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
-the work off the main thread so that the UI can remain responsive even while
+its work from the main thread so that the UI can remain responsive even while
 it is working on generating solutions. To achieve this, we spawn a web worker
 that sends a message to the main thread every time a solution gets generated.
 These messages are then packaged into an async generator so that we can loop
@@ -208,7 +209,7 @@ facts for specifying notes. Upon generating a solution, it transforms the raw
 facts back into the raw notes for each track. To facilitate users being able to
 see into the internals of the program, we also pass along the final generated
 Dusa programs, and all facts that were generated as part of the solution:
-specifcially flagging facts that denote a solution being an invalid
+specifically flagging facts that denote a solution being an invalid
 counterpoint. The raw information is not used, but is simply passed along to the
 UI to offer the user a look inside the system.
 
