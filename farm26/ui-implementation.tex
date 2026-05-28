@@ -15,11 +15,13 @@
 \section{UI Implementation}
 \label{sec:ui-implementation}
 
-With the goal in mind of supporting interactions with the Dusa counterpoint
-generator grounded in the domain conventions of music, we developed a
-web-based graphical user interface.  The following subsections describe our
-design goals, a user's-eye view of the current prototype, and the software
-architecture and development approach.
+The job of an interface to our Dusa implementation is to transform user
+input into corresponding ground \verb|cf| facts, append them to the program
+implementing the rules, call the solver, and read off facts in Dusa's
+output into user-legible/audible rendering. In this section we discuss our
+approach to designing a {\em domain-specific interface} for this purpose.
+We describe our design goals, a user's-eye view of the current prototype,
+and the software architecture and development approach.
 
 \subsection{Design Goals}
 
