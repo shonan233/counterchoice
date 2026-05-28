@@ -20,34 +20,52 @@ To compose counterpoint, one starts with a pre-existing melody called the
 cantus firmus.
 
 Here is an example of first-species counterpoint composed against a
-phrase from the German song \emph{Froschgesang}.
+phrase from the German folk song \emph{Froschgesang}.
 
 \begin{center}
-\includegraphics[width=7cm]{cp.png}
+\includegraphics[width=7cm]{goodcp.png}
 \end{center}
 
 There are various sets of rules associated to counterpoint intended to ensure
-that the pair of melodies sounds good together. For example, the following are
-three key rules of first-species counterpoint as articulated by
-Fux~\cite{fux-cp}.
+that the two melodies sound pleasing both when played together and when played individually. 
+For example, the following are three key rules of first-species counterpoint as articulated by Fux~\cite{fux-cp}.
 
 \begin{itemize}
-  \item \textbf{End with a cadence.}
-    The final pair of notes must form a unison or an octave, and this interval
-    must be approached by stepwise contrary motion (Figure~\ref{fig:rules} left).
-    This progression is called a cadence, and creates a sense of resolution.
-
-  \item \textbf{No direct fifths or octaves.}
-    It is forbidden for the two voices to form a fifth or an octave by movement
-    in the same direction (Figure~\ref{fig:rules} middle). This forbidden
-    progression is called a direct fifth or octave, and it destroys the
-    independence of the voices.
-
-  \item \textbf{No successive large leaps in the same direction.}
-    The counterpoint line should not leap multiple times in the same direction
-    by large intervals, namely fifths or sixths (Figure~\ref{fig:rules} right).
-    Such a motion disrupts the flow of the melody.
+  \item The interval between the two notes in a bar must be consonant.
+  \item The two voices should not move in the same direction into a fifth or an octave.
+  \item The last interval must be a unison or an octave reached by stepwise contrary motion.
 \end{itemize}
+
+% \begin{itemize}
+%   \item \textbf{End with a cadence.}
+%     The final pair of notes must form a unison or an octave, and this interval
+%     must be approached by stepwise contrary motion (Figure~\ref{fig:rules} left).
+%     This progression is called a cadence, and creates a sense of resolution.
+%   
+%   \item \textbf{No direct fifths or octaves.}
+%     It is forbidden for the two voices to form a fifth or an octave by movement
+%     in the same direction (Figure~\ref{fig:rules} middle). This forbidden
+%     progression is called a direct fifth or octave, and it destroys the
+%     independence of the voices.
+%   
+%   \item \textbf{No successive large leaps in the same direction.}
+%     The counterpoint line should not leap multiple times in the same direction
+%     by large intervals, namely fifths or sixths (Figure~\ref{fig:rules} right).
+%     Such a motion disrupts the flow of the melody.
+% \end{itemize}
+
+The example we saw above adheres to these rules, and it indeed sounds
+good to human ears.
+In contrast, the example below breaks these rules, and hence it does
+not sound as good as the first example.
+Specifically, the parallel fifths in bars 2 and 3 break the
+independence of the melodies, the dissonant intervals in bars 4 and
+5 create an unstable feeling, and the parallel thirds in bars 6 and 7
+fail to establish a sense of resolution.
+
+\begin{center}
+\includegraphics[width=7cm]{badcp.png}
+\end{center}
 
 Our Dusa encoding of first-species counterpoint
 (Section~\ref{sec:dusa-implementation}) enforces these and a handful of other
