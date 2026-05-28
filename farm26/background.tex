@@ -171,15 +171,15 @@ by closed rules.
 
 \subsubsection{Syntactic Sugar}
 
-We use two key pieces of syntactic sugar in this paper:
+We use three key pieces of syntactic sugar in this paper:
 \begin{itemize}
-  \item Using attributes like function calls: since
+  \item {\bf Using attributes like function calls.} Since
     the values of attributes are unique, we can treat them
     like functions and place their application in term
     position. For example, we can write
     \verb|interval is (plus 2 4)| instead of
     \verb|interval is X :- plus 2 4 is X|.
-  \item \verb|#forbid| and \verb|#demand|. Choice rules and
+  \item {\bf \verb|#forbid| and \verb|#demand|.} Choice rules and
     functional dependencies are enough to represent
     constraints more naturally expressed as ``$P$ must hold in
     all valid solutions''
@@ -188,6 +188,18 @@ We use two key pieces of syntactic sugar in this paper:
     constraints directly as \verb|#demand| $P$ and
     \verb|#forbid| $Q$. If you are interested in how these
     constraints are elaborated, please see the Dusa documentation.\footnote{\url{https://dusa.rocks/docs/}}
+  \item {\bf \verb|#lazy| predicates.} By default, Dusa executes with
+    forward-chaining deduction, eagerly producing all facts that are
+    justified by and consistent with the program (similar to Datalog).
+    However, some definitions entail infinitely many such facts (such
+    as the definition of addition), so we should not eagerly ``unroll''
+    this definition as part of the generated solution.
+    A \verb|#lazy| declaration for a predicate indicates that Dusa should
+    expand the definition only in a goal-directed (backward-chaining)
+    manner, when it is used as the premise to another rule. (This is
+    syntactic sugar because is elaborated into forward-chaining
+    rules by a variant on established
+    techniques~\cite{bancilhon1985magic,beeri1987power,tekle2010precise}.)
 \end{itemize}
 
 \subsubsection{Executing a Dusa program}
@@ -208,7 +220,7 @@ SAT solving. In addition, Dusa is a research prototype and not finely tuned
 for efficiency, unlike modern SAT solvers and answer set solvers
 based on them. Expressing programs in a way that Dusa can
 (relatively) efficiently find solutions is a challenge,
-which we discuss in Section~\TODO{forward reference}.
+which we discuss in Section~\ref{sec:discussion}.
 
 % TODO stochastic search; streaming solutions; web impl and API
 
