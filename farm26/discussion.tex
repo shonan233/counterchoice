@@ -1,9 +1,37 @@
 \section{Discussion}
 \label{sec:discussion}
+We discuss the answers to our research questions and how alternative development decisions might influence those answers
 
-\YE{These are simply some comments that I thought might be helpful to the person writing the discussion part, not meant to be a draft of the Discussion section.}
+%\YE{These are simply some comments that I thought might be helpful to the person writing the discussion part, not meant to be a draft of the Discussion section.}
 
-\subsection{Observations}
+\subsection{Research Questions}
+We structure the discussion of our experience building and using CounterChoice around our research questions.
+We answer each question in turn by synthesizing the empirical results of the development process with the authors' qualitative experiences as the developers.
+
+\paragraph{RQ1: When we attempt to express the principles of counterpoint as ``executable knowledge'' in a logic programming language, how does the computational formalism compare with the musical formalism?}
+At the top-level, the Dusa formalism is structured as \verb|#forbid| and \verb|#demand| constraints.
+These constraints match the formalism of natural-language counterpoint rules directly, which define patterns that must or must not occur.
+
+Dusa formalism and counterpoint formalism differ primarily in their depth.
+As a natural-language description, the rules of counterpoint can freely assume domain knowledge: the intended readers understand the concepts of notes, intervals, modes, and direct vs.\ contrary motion.
+Dusa is not a domain-specific language, so these notions must be implemented explicitly.
+The implementation in Dusa was concise precisely because the domain concepts can be built up readily from concepts native to Dusa, such as finite types and natural numbers.
+
+Students of music theory traditionally prefer to use one formalism at a time, providing a unified guiding structure for the composition.
+In contrast, we preferred to write test code in a more imperative formalism than the implementation, because we are more confident that we interpreted musical formalisms correctly if the interpretations across two code formalisms agree.
+
+
+
+\paragraph{RQ2: How easily and modularly can a mixed-initiative creative interface be developed for the Dusa solver that supports familiar affordances and notation for music composition without modifying the underlying language?}
+
+\paragraph{RQ3: What does this case study reveal about the existing
+    capabilities of Dusa, and opportunities for improved language runtime
+    and tool support, in the context of constraint solving for an artistic
+    practice?}
+
+
+
+
 \begin{itemize}
     \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
     \item Another feature of Dusa is the randomness in selecting a child when branching out, which causes fluctuations in the number of choices and deductions between runs. This makes it harder to reliably check the effects of alterations in the code. (Solution order is changed between runs of same code, optimization is hard to tell without reruns unless very obvious)
