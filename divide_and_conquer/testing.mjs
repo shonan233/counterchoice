@@ -513,9 +513,6 @@ function evaluateSolution(solution)
 }
 
 
-console.log(evaluateSolution(solution));
-
-
 if (evaluateSolution(solution))
 {
   console.log("All tests passed!\n");
