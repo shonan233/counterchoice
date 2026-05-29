@@ -36,7 +36,7 @@ CounterChoice centers around a Dusa logic program that encodes the rules of firs
 \end{figure}
 
 
-We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C4 (when $\mathtt{N}=0$), D4, \dots, B4, C5 (when $\mathtt{N}=7$), along with a predicate \verb|length T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody, as the two melodies move in lock-step and we do not encode any information about duration.
+We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C4 (when $\mathtt{N}=0$), D4, \dots, B4, C5 (when $\mathtt{N}=7$), along with a predicate \verb|length T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody. There is no need to encode the information of duration, because the two melodies move in the exact same rhythm.
 
 \begin{verbatim}
   cf 0 is 1.
@@ -212,7 +212,7 @@ We \verb|#forbid| two separate predicates \verb|twoLargeLeapsUp T| and \verb|two
     plus 3 (cpNote (plus T 2)) < cpNote (suc T).
 \end{verbatim}
 
-Another constraint is that \emph{the counterpoint melody cannot have more than three leaps (movements greater than a step) in a row}. We define a \verb|#lazy| auxiliary predicate \verb|leap T| to hold when \verb|cpNote T| and \verb|cpNote (suc T)| differ by more than $1$.
+Another constraint is that \emph{the counterpoint melody cannot have more than three leaps in a row}. We define a \verb|#lazy| auxiliary predicate \verb|leap T| to hold when \verb|cpNote T| and \verb|cpNote (suc T)| differ by more than $1$.
 
 \begin{verbatim}
   #lazy leap
