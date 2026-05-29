@@ -77,39 +77,34 @@ lenses.  The CounterChoice case study seeks to address the following
 research questions (RQs):
 
 \begin{itemize}
-  \item \textbf{RQ1:} When we attempt to express the principles of counterpoint
-    as ``executable knowledge''~\cite{harmer2012executable} in a logic
-    programming language, how does the computational formalism compare with
-    the musical formalism?
+  \item \textbf{RQ1:} How faithfully is the established musical formalism of counterpoint reflected in the computational formalization of counterpoint as ``executable knowledge''~\cite{harmer2012executable} in a Dusa program?
   % \item \textbf{RQ2:} When the expression of these principles needs to
   %  be adapted for efficient counterpoint synthesis, how does this change
   %  affect the relationship between computational and musical formalism? 
-  \item \textbf{RQ2:} How easily and modularly can a mixed-initiative 
-    creative interface~\cite{deterding2017mixed}
-    be developed for the Dusa solver that supports
-    familiar affordances and notation for music
-    composition without modifying the underlying language?
+  \item \textbf{RQ2:} How does development of a mixed-initiative creative 
+    interface~\cite{deterding2017mixed} with familiar 
+    composition affordances interdepend with the 
+    development of the Dusa backend solver? 
+%  How easily and modularly can a mixed-initiative 
+%    creative interface~\cite{deterding2017mixed}
+%    be developed for the Dusa solver that supports
+%    familiar affordances and notation for music
+%    composition without modifying the underlying language?
 
-  \item \textbf{RQ3:} What does this case study reveal about the existing
-    capabilities of Dusa, and opportunities for improved language runtime
-    and tool support, in the context of constraint solving for an artistic
+  \item \textbf{RQ3:} How can the experience of developing CounterChoice 
+    inform design and implementation of programmer experience for logic 
+    programming languages, in the context of constraint solving for an artistic
     practice?
-
+ 
   % \item \textbf{RQ2:} How much of the tool implementation can readily be performed in Dusa, and how much must be performed in traditional languages?
   % \item \textbf{RQ3:} How might the tooling of Dusa and similar languages be revised to simplify the development of user-facing generation tools?
 \end{itemize}
 
-% TODO (CM): stopped here before editing below.
-\TODO{polish the following paragraphs later}
-
-Answering RQ1 helps us understand the adequacy of logic programming for
-formalizing harmony, i.e., whether music theory relies on principles that
-do not translate directly into the available logic.  Answering RQ2 helps us
-characterize how compatible a logic-programming approach is with design
-principles for creativity support tools, specifically in the creative
-context of music composition.  Answering RQ3 provides formative feedback to
-guide continuing development of the Dusa language and promote future
-application development.
+Answering RQ1 helps us assess the cost and value of choosing Dusa vs.\ other programming languages by understanding whether the desired domain concepts can be expressed, and with what difficulty.
+Answering RQ2 helps us assess both the flexibility and uniqueness of Dusa as a development platform.
+On one hand, a flexible programming language should require few or no changes to support the development of a new application.
+On the other hand, if Dusa provides unique features, the impact thereof should be visible in the interface.
+Answering RQ3 provides contributes to the shared knowledge of the logic programming community beyond Dusa by providing design and implementation recommendations.
 
 We outline the structure of the paper.
 The foundations of counterpoint are presented in Section \ref{sec:background}.

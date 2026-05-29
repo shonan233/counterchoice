@@ -8,7 +8,7 @@ We discuss the answers to our research questions and how alternative development
 We structure the discussion of our experience building and using CounterChoice around our research questions.
 We answer each question in turn by synthesizing the empirical results of the development process with the authors' qualitative experiences as the developers.
 
-\paragraph{RQ1: When we attempt to express the principles of counterpoint as ``executable knowledge'' in a logic programming language, how does the computational formalism compare with the musical formalism?}
+\paragraph{RQ1: How faithfully is the established musical formalism of counterpoint reflected in the computational formalization of counterpoint as ``executable knowledge'' in a Dusa program?}
 At the top-level, the Dusa formalism is structured as \verb|#forbid| and \verb|#demand| constraints.
 These constraints match the formalism of natural-language counterpoint rules directly, which define patterns that must or must not occur.
 
@@ -18,35 +18,81 @@ Dusa is not a domain-specific language, so these notions must be implemented exp
 The implementation in Dusa was concise precisely because the domain concepts can be built up readily from concepts native to Dusa, such as finite types and natural numbers.
 
 Students of music theory traditionally prefer to use one formalism at a time, providing a unified guiding structure for the composition.
-In contrast, we preferred to write test code in a more imperative formalism than the implementation, because we are more confident that we interpreted musical formalisms correctly if the interpretations across two code formalisms agree.
+In contrast, we need to ensure that the Dusa implementation of counterpoint concepts is faithful.
+We found it helpful to write test code in a more imperative formalism than the implementation, because when these two styles of code agree, it increases our confidence that we interpreted musical concepts faithfully.
+ 
+Lastly, counterpoint translates faithfully into our Dusa formalism in part because counterpoint is a \emph{formalist} style of music, defined by strict rules.
+In contrast, the motivations underlying those rules are often given in emotional terms: tension, resolution, smoothness, and the like.
+This subjective aspect of music should not be expected to translate smoothly into computational formalism. 
+Rather, our co-creativity approach allows software to enforce formal constraints within which a user exercises their subjectivity.
 
+\paragraph{RQ2: How does development of a mixed-initiative creative  interface with familiar 
+    composition affordances interdepend with the development of the Dusa backend solver?}
 
+The JavaScript API provided by Dusa enables integration to be performed just once, invoking the Dusa solver in a worker thread.
+The frontend and backend were able to evolve in a modular fashion throughout development because of the stable interface between them: the frontend specifies a cantus firmus and rule set, from which the backend generates a counterpoint.
+We expect stable output interfaces to be common for procedural generation tasks where the ``medium'' is fixed, though input interfaces may evolve as configuration options are added.
 
-\paragraph{RQ2: How easily and modularly can a mixed-initiative creative interface be developed for the Dusa solver that supports familiar affordances and notation for music composition without modifying the underlying language?}
+A more subtle design consideration, however, is the extent to which seeing program internals on the user interface is \emph{desirable}.
+CounterChoice is specifically intended as a \emph{demonstrator} application for Dusa, which must balance the competing needs to provide familiar affordances and showcase technical novelties.
+To ensure familiarity, the ``programmability'' of CounterChoice is restricted to selecting a rule set.
+Deeper interaction with Dusa code is delayed until after the main interaction is complete, as optional code download is offered only after a complete counterpoint has been generated.
+Without rule set selection, the interface would provide no direct intuition for the underlying generation model; 
+without a direct manipulation GUI, the audience may be restricted to users of research programming languages.
 
-\paragraph{RQ3: What does this case study reveal about the existing
-    capabilities of Dusa, and opportunities for improved language runtime
-    and tool support, in the context of constraint solving for an artistic
+Though Dusa integration did not impose much burden on frontend development, nor can it make frontend development \emph{easier}.
+The largest section of frontend code is dedicated to the bespoke direct-manipulation piano roll interface, which must handle various GUI events and render graphics in detail.
+The decision to adopt a language like Dusa must be made with proper awareness of its scope: if the backend generation algorithms are a minority of the codebase, a minority of code will change when Dusa is adopted.
+
+\paragraph{RQ3: How can the experience of developing CounterChoice 
+    inform design and implementation of programmer experience for logic 
+    programming languages, in the context of constraint solving for an artistic
     practice?}
 
+Because Dusa is only one logic programming language among many, we elaborate our Dusa experience into design and implementation recommendations for logic programming-based creativity tools overall.
+
+The Dusa language implementation is not heavily optimized for performance.
+It is a timeless adage that premature optimization should be avoided, but the CounterChoice adage bore this out.
+With no changes to the Dusa language implementation, improvements to the design of CounterChoice's core rule set increased the length of supported compositions from about 12 notes to nearly 50 notes, which is a substantial increase in the context of exponential search complexity.
+\emph{Implementation Recommendation:} In accordance with timeless advice, avoid premature optimization.
+
+Though the optimization process required no changes to the language implementation, the same optimization process revealed usability limitations in the programmer experience.
+Procedural content generation fundamentally values diversity of generated content, so Dusa's use of randomized search is an appropriate default behavior.
+However, the running time of search can vary drastically between random seeds, making the impact of optimizations difficult to measure.
+Likewise, buggy behavior may appear only for certain random seeds, making it more difficult to measure whether a given revision resolves a bug during the debugging process.
+\emph{Design Recommendation:} Provide the option to manually seed the random number generator for performance testing and debugging.
+
+Dusa provides performance metrics such as the number of states explored.
+During optimization, we measured progress using these metrics, but observed that millions of states were explored when our mental model predicted only a few hundred.
+These states, where search failed, did not contribute to the final solution set, which was as small as predicted.
+Logic programs excel at automatically searching large search spaces that emerge from small rule sets, but the failed branches of search are just as important to understanding overall program behavior as successful branches are.
+There are often millions of such failed branches, far more than a human programmer can efficiently inspect by hand.
+\emph{Design Recommendation:} 
+  Provide mechanisms for inspecting the failing and intermediate regions of the search space. 
+  Present a bounded volume of information even when large state sets are explored.
+
+Substantial time was spent debugging rules which never activated because their premises are never satisfied, e.g., due to typos.
+In imperative languages, warnings for these unreachable statements are widespread.
+In functional programming languages, strong type systems are commonly provided which rule out broad classes of errors before execution.
+Because logic programs are search-based, reachability information is limited until runtime, and static computations of reachability may need to rely on approximations
+\emph{Design Recommendations:} Establish static warnings to detect classes of logic programs that are highly unlikely to reflect programmer intention.
 
 
-
-\begin{itemize}
-    \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
-    \item Another feature of Dusa is the randomness in selecting a child when branching out, which causes fluctuations in the number of choices and deductions between runs. This makes it harder to reliably check the effects of alterations in the code. (Solution order is changed between runs of same code, optimization is hard to tell without reruns unless very obvious)
-    \item We observed that while Dusa found solutions within a second at some attempts, it executed indefinitely possibly due to getting stuck at a bad branch somewhere along the solution steps at others
-    \item
-      \CM{(Notes from Ari on developing the UI, moved from
-      ui-implementation.text)}
- Developing the UI felt like any other web application, treating the Dusa worker
- system as a backend and the rendering code as the frontend, despite all the
- execution being clientside.
- The code to connect with Dusa only needs to be implemented once, and it allows
- for effectively arbitrarily complex UI to be built around it, calling on the
- solver whenever required. The segmented nature allows much more flexibility in
- implementing other interface concepts without making many changes to the worker.
-\end{itemize}
+%\begin{itemize}
+%    \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the %premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
+%    \item Another feature of Dusa is the randomness in selecting a child when branching out, which causes fluctuations in the number of %choices and deductions between runs. This makes it harder to reliably check the effects of alterations in the code. (Solution order is %changed between runs of same code, optimization is hard to tell without reruns unless very obvious)
+%    \item We observed that while Dusa found solutions within a second at some attempts, it executed indefinitely possibly due to getting %stuck at a bad branch somewhere along the solution steps at others
+%    \item
+%      \CM{(Notes from Ari on developing the UI, moved from
+%      ui-implementation.text)}
+% Developing the UI felt like any other web application, treating the Dusa worker
+% system as a backend and the rendering code as the frontend, despite all the
+% execution being clientside.
+% The code to connect with Dusa only needs to be implemented once, and it allows
+% for effectively arbitrarily complex UI to be built around it, calling on the
+% solver whenever required. The segmented nature allows much more flexibility in
+% implementing other interface concepts without making many changes to the worker.
+%\end{itemize}
 
 \subsection{Possible Next Steps} % this goes into future work section I think
 \begin{itemize}
