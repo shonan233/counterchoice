@@ -7,37 +7,64 @@ techniques, and counterpoint is particularly well-studied because it
 has clear rules.
 Existing work represents counterpoint rules in a wide variety of ways,
 including if-then statements~\cite{schottstaedt-cp}, fuzzy
-logic~\cite{yilmaz-fuzzy}, answer set programming~\cite{boenn-asp,everardo2011armin},
+logic~\cite{yilmaz-fuzzy}, answer set programming (ASP)~\cite{boenn-asp,everardo2011armin},
 and dependent and refinement types~\cite{szamozvancev-mezzo,
 cong-musictools, cong-weighted}.
-These approaches all guarantee the correctness of compositions, but
-their implementation does not typically come with a user interface.
+The ASP approach is closest to ours,
+although these examples demonstrate a smaller, more simplified subset of 
+counterpoint principles.
+All of these approaches guarantee the adherence of compositions to rules
+expressed in logic, but some can only check (rather than synthesize)
+examples, and their implementations do not come with front-end interfaces.
 
 \paragraph{Mixed-Initiative Creativity Support Tools}
 
-Our design of CounterChoice draws from a few closely-related genres
+Our design of CounterChoice's front-end draws from a few closely-related genres
 of software articulated in the literature:
 \begin{itemize}
-\item Procedural content generation, which emerges from digital games,
-conceptualizes human creative activities as possibilities for
-computational simulation (e.g. for the design of game levels and
-environments); % TODO cite
-\item Mixed-initiative
-creative systems, which place procedural generation into a human
-interaction loop,
-conceptualizing human 
+  \item Procedural content generation~\cite{shaker2016procedural,short2017procedural}, which emerges from digital games,
+    conceptualizes design tasks (e.g. coming up with game levels and
+    environments) as opportunities for computer simulation to
+    generate examples from specification of search spaces.
+Prior work has attempted to taxonomize and map design spaces
+for associated techniques in the domain space of
+music composition and performance~(e.g. \cite{wooller2005framework,collins2009introduction}).
+\item Mixed-initiative creative
+    systems~\cite{smith2010tanagra,yannakakis2014mixed,liapis2016mixed,deterding2017mixed}
+    place procedural generation (or other forms of computational
+    assistance) into a human interaction loop, conceptualizing human 
 users and computational systems as engaged in a {\em collaboration}
 where each can contribute ideas and content to the creative
-artifact being developed; 
+artifact being developed. Prior work on automated musical accompaniment
+    systems can be seen as fitting into this
+    framework~\cite{grubb1994automated}. 
 % (TODO cite)
-\item Casual Creators~\cite{compton-casual}, which
-focus on enabling the autotelic experience of creative activities rather than
-task productivity, and center users with minimal prior experience in the creative
-domain.
-The philosophy of Casual Creators has inspired tools for creating
+\item Casual creators~\cite{compton-casual} 
+are software systems that enable the autotelic experience of creative
+    activities as opposed to
+task productivity, centering users with minimal prior experience in the creative domain.
+Compton's academic analysis of casual creators revealed a set of design patterns
+    that has since inspired tools for creating
 tile maps~\cite{carpenter-tile}, hybrid craft~\cite{graves-eloominate},
-and avatars~\cite{otto-avatar}.
+    and avatars~\cite{otto-avatar}.
+    %(although ultimately, ``casual creator''
+   % is an extensional descriptor that must be evaluated for a given
+    % system).
+  Analysis of software ``in the wild'' identifies several example
+    for music~\cite{petrovskaya2020casual}, including Reason Studios'
+    \textit{Figure} and Brian Eno's \textit{Trope}, \textit{Quarto},
+    and \textit{Scape} (which also incorporate visual composition).
 \end{itemize}
+
+Of these bodies of literature, the only works we are aware of
+that center logic programming as a technique for expressing and
+manipulating creative constraints are those within procedural generation,
+usually in the context of highly abstracted aspects of game development.
+With this work, we hope to spark connections between researchers studying
+modes of human creative expression and those studying programming language
+design and semantics, demonstrating the compatibility of these disciplines
+while also emphasizing the conceptual and technical gaps that must be
+closed to enable their harmonic synthesis.
 
 % Our tool's design attempts to follow this philosophy in that
 % it allows the user to exploratively compose counterpoint without
@@ -49,9 +76,7 @@ and avatars~\cite{otto-avatar}.
 % - describe how Counterchoice fits these frameworks
 % - discuss related work for music composition
 
-TODO: Music-specific tools for procedural generation/mixed-initiative
-creativity/casual creators
 
-TODO: logic programming/constraint solving-specific examples of the same
+% TODO: logic programming/constraint solving-specific examples
 
 
