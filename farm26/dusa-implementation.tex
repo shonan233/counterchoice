@@ -289,23 +289,13 @@ As a result, it is unproblematic to specify this constraint as a positive \verb|
 \end{verbatim}
 
 \paragraph{Running the program}
-\CM{added this as a kind of transition between sections. It could also go
-at the start of the next section, but it seems like this section should end
-with at least a line or two of prose to put it all together.}
 
 The program just described can be viewed as a declarative specification of
 harmony, but does not inherently indicate how to run it for
 the purpose
 counterpoint synthesis. To do that, we must supply a 
-collection of ground \verb|cf| facts for consecutive time steps, such as:
-
-\begin{verbatim}
-  cf 0 is 1.
-  cf 1 is 3.
-  cf 2 is 5.
-  cf 3 is 5.
-\end{verbatim}
-
+collection of ground \verb|cf| facts for consecutive time steps,
+such as those presented at the beginning of this section.
 Then Dusa produce solutions that contain, for example, the following
 facts, which represent the generated counterpoint:
 \begin{verbatim}
@@ -315,6 +305,6 @@ facts, which represent the generated counterpoint:
   cpNote 3 is 5.
 \end{verbatim}
 
-\CM{do we want to show cp or cpNote? or "at"?}
+% \CM{do we want to show cp or cpNote? or "at"?}
 
 
