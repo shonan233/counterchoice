@@ -12,6 +12,9 @@ import Notes from "./Notes";
 import { usePlayback } from "./usePlayback";
 import style from "./App.module.css";
 
+import badcp from "/audio_examples/badcp.mp3?url";
+import goodcp from "/audio_examples/goodcp.mp3?url";
+
 const SOLUTION_LIMIT = 9;
 
 export default function App() {
@@ -222,9 +225,9 @@ export default function App() {
         <summary>See examples</summary>
         <figure>
           <figcaption>Bad counterpoint:</figcaption>
-          <audio src="/audio/badcp.mp3" controls />
+          <audio src={badcp} controls />
           <figcaption>Good counterpoint:</figcaption>
-          <audio src="/audio/goodcp.mp3" controls />
+          <audio src={goodcp} controls />
         </figure>
       </details>
     </>
