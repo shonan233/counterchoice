@@ -217,6 +217,16 @@ export default function App() {
           </li>
         ))}
       </ul>
+
+      <details>
+        <summary>See examples</summary>
+        <figure>
+          <figcaption>Bad counterpoint:</figcaption>
+          <audio src="/audio/badcp.mp3" controls />
+          <figcaption>Good counterpoint:</figcaption>
+          <audio src="/audio/goodcp.mp3" controls />
+        </figure>
+      </details>
     </>
   );
 }
