@@ -130,7 +130,6 @@ Because certain constraints apply only at specific positions in the melody, name
 Calls to the Dusa solver are made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from \verb|child_process| module to enable interruptions if no solutions are found. The maximum number of attempts per segment and the timeout limit are set to 5 and 2000ms respectively.
 
 \paragraph{Findings}
-\RB{Do we have more precise performance information?}
 The approach performed well in practice, solving long cantus firmi in under a second.
 However, the current implementation does not employ a backtracking mechanism, which means the main failure mode is that the solver occasionally gets stuck on a random segment. Although the performance is very promising, the implementation described in Section~\ref{sec:dusa-implementation} can already generate counterpoint melodies with 50 notes, which is already sufficient for all compositions the authors wished to develop.
 Between the architectural complexity of the divide-and-conquer algorithm and the observed failure mode, we did not investigate it further.
