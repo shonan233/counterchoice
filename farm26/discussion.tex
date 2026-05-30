@@ -41,7 +41,7 @@ Deeper interaction with Dusa code is delayed until after the main interaction is
 Without rule set selection, the interface would provide no direct intuition for the underlying generation model; 
 without a direct manipulation GUI, the audience may be restricted to users of research programming languages.
 
-Though Dusa integration did not impose much burden on frontend development, nor can it make frontend development \emph{easier}.
+Though Dusa integration did not impose much burden on frontend development, it also did not make our frontend development \emph{easier}.
 The largest section of frontend code is dedicated to the bespoke direct-manipulation piano roll interface, which must handle various GUI events and render graphics in detail.
 The decision to adopt a language like Dusa must be made with proper awareness of its scope: if the backend generation algorithms are a minority of the codebase, a minority of code will change when Dusa is adopted.
 
@@ -53,8 +53,8 @@ The decision to adopt a language like Dusa must be made with proper awareness of
 Because Dusa is only one logic programming language among many, we elaborate our Dusa experience into design and implementation recommendations for logic programming-based creativity tools overall.
 
 The Dusa language implementation is not heavily optimized for performance.
-It is a timeless adage that premature optimization should be avoided, but the CounterChoice adage bore this out.
-With no changes to the Dusa language implementation, improvements to the design of CounterChoice's core rule set increased the length of supported compositions from about 12 notes to nearly 50 notes, which is a substantial increase in the context of exponential search complexity.
+It is a timeless adage that premature optimization should be avoided, and our experience bore this out.
+With no changes to the Dusa language implementation, improvements to the design of CounterChoice's core rule set increased the length of supported compositions from about 12 notes to 50 notes, which is a substantial increase in the context of exponential search complexity.
 \emph{Implementation Recommendation:} In accordance with timeless advice, avoid premature optimization.
 
 Though the optimization process required no changes to the language implementation, the same optimization process revealed usability limitations in the programmer experience.
@@ -75,7 +75,7 @@ There are often millions of such failed branches, far more than a human programm
 Substantial time was spent debugging rules which never activated because their premises are never satisfied, e.g., due to typos.
 In imperative languages, warnings for these unreachable statements are widespread.
 In functional programming languages, strong type systems are commonly provided which rule out broad classes of errors before execution.
-Because logic programs are search-based, reachability information is limited until runtime, and static computations of reachability may need to rely on approximations
+Because logic programs are search-based, reachability information is limited until runtime, and static computations of reachability may need to rely on approximations.
 \emph{Design Recommendations:} Establish static warnings to detect classes of logic programs that are highly unlikely to reflect programmer intention.
 
 
@@ -101,7 +101,7 @@ CounterChoice, as implemented, has successfully addressed our research questions
 However, it is important to recognize that alternative design and implementation decisions are possible.
 To this end, we explore an alternative divide-and-conquer algorithm which we prototyped during the development process before settling on the algorithm documented in Section~\ref{sec:dusa-implementation}.
 
-Though the CounterChoice implementation can solve cantus firmi of up to nearly 50 notes, its exponential complexity is a clear limitation for long pieces.
+Though the CounterChoice implementation can solve cantus firmi of 50 notes, its exponential complexity is a clear limitation for long pieces.
 To handle such cases, we developed an alternative \emph{divide-and-conquer} approach using JavaScript where the cantus firmus is divided into overlapping segments based on index boundaries, each one is solved independently by the Dusa solver, and the results are assembled into a complete counterpoint line. 
 The strength of this approach is that bounding the length of each segment bounds the extent of exponential slowdown.
 The divide-and-conquer approach has a natural musical motivation as well; composers often work phrase by phrase rather than treating every note with equal global importance.
@@ -132,9 +132,9 @@ Calls to the Dusa solver are made with a function named \verb|solveChunk|, which
 \paragraph{Findings}
 \RB{Do we have more precise performance information?}
 The approach performed well in practice, solving long cantus firmi in under a second.
-However, the current implementation does not employ a backtracking mechanism, which means the main failure mode is that the solver occasionally gets stuck on a random segment. Although the performance is very promising, the optimizations described in Section~\ref{sec:dusa-implementation} raised the practical limit of the standard implementation to close to 50 notes, which is already sufficient for all compositions the authors wished to develop.
+However, the current implementation does not employ a backtracking mechanism, which means the main failure mode is that the solver occasionally gets stuck on a random segment. Although the performance is very promising, the implementation described in Section~\ref{sec:dusa-implementation} can already generate counterpoint melodies with 50 notes, which is already sufficient for all compositions the authors wished to develop.
 Between the architectural complexity of the divide-and-conquer algorithm and the observed failure mode, we did not investigate it further.
 
 Nonetheless, the divide-and-conquer implementation holds several takeaway lessons.
 We learned that generation of long counterpoints should not be dismissed as exponentially-complex when a subexponential algorithm exists that not only generates correct counterpoints in principle but interesting ones in practice.
-The existence of this substantially different algorithm also highlights that counterpoint generation is not a creative process for the end user alone; rather there is substantial space available for creativity in the design and implementation counterpoint generation algorithms themselves.
+The existence of this substantially different algorithm also highlights that counterpoint generation is not a creative process for the end user alone; rather there is substantial space available for creativity in the design and implementation of counterpoint generation algorithms themselves.

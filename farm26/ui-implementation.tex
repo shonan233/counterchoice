@@ -67,7 +67,7 @@ We do not intend to support music
 tool to support live performance (though we have some ideas
 for how it could be extended to do so).
 Our interface takes inspiration from
-Beepbox~\cite{beepbox}, having just one view with
+BeepBox~\cite{beepbox}, having just one view with
 the piano roll as its most prominent element.
 
 % There are many possible designs for such a system
@@ -257,6 +257,6 @@ As we experimented with multiple Dusa implementations, we found it useful to per
 
 Though runtime performance is not a primary research objective, we found that different ways of phrasing the constraints within Dusa had dramatic impacts on the time to first solution, and importantly, the length of cantus firmus for which we could find a solution before running out of memory. (Indeed, the search space is exponential.)
 
-An early version of our Dusa code based around a monolithic \verb|judgeCP T I is {good,bad}| predicate got stuck on cantus firmi longer than about 12 notes. Reworking this around separate \verb|#forbid|den predicates increased the limit to over 30 notes, and further refinements allow our current implementation to solve cantus firmi with close to 50 notes.
+An early version of our Dusa code based around a monolithic \verb|judgeCP T I is {good,bad}| predicate got stuck on cantus firmi longer than about 12 notes. Reworking this around separate \verb|#forbid|den predicates increased the limit to over 30 notes, and further refinements allow our current implementation to solve cantus firmi with 50 notes.
 
 While fine-tuning the implementation, we found it helpful to write a simple script which measures the amount of time it takes Dusa to compute a first solution for the same cantus firmus across multiple trials, given that Dusa is nondeterministic. We also experimented with manually seeding the random number generator at the start of this script, so that the benchmark itself would return the same results across multiple runs.

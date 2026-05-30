@@ -1,11 +1,11 @@
 \section{Conclusion and Future Work}
 \label{sec:conclusion}
-We presented CounterChoice, graphical tool that composes first-species counterpoint collaboratively with the casual creators who use it.
+We presented CounterChoice, a graphical tool that composes first-species counterpoint collaboratively with the casual creators who use it.
 CounterChoice is a case study for the finite-choice logic programming language Dusa. 
 This case study explored three research questions: how faithfully our formalization in Dusa reflects counterpoint's musical formalism (RQ1), how development of the interface interdepends with development of the Dusa backend solver (RQ2), 
 and how the experience of developing CounterChoice can inform design and implementation of programmer experience for logic programming languages (RQ3).
 
-For RQ1, we achieved exact formalizations of all ten 10 first-species counterpoint rules we attempted.
+For RQ1, we achieved exact formalizations of all ten first-species counterpoint rules we attempted.
 Dusa's positive and negative constraints provided a direct language for stating these top-level rules, though domain concepts like intervals and direct vs.\ contrary motion required explicit encoding in Dusa.
 Compared to functional correctness, performance optimization consumed greater effort in logical rule design.
 For RQ2, we observed a one-sided interdependency, to our satisfaction.
@@ -17,7 +17,7 @@ For RQ3, we arrived at a list of design and implementation recommendations.
 To summarize the recommendations, we encourage logic programming language developers to prioritize static checks, inspectability of the search space, and availability of deterministic modes, as opposed to performance optimization.
 
 Our future work includes technical advances to the current application and expansion to broader applications.
-Though our standard algorithm is efficient enough for compositions of nearly 50 notes, we propose adding backtracking mechanisms to the alternative divide-and-conquer approach so that arbitrarily long pieces can be generated without scalability concern.
+Though our standard algorithm is efficient enough for compositions of 50 notes, we propose adding backtracking mechanisms to the alternative divide-and-conquer approach so that arbitrarily long pieces can be generated without scalability concern.
 When multiple solutions are found, we propose to select a preferred solution among them by applying \emph{soft constraints} as selection heuristics.
 For example, we can prioritize candidate solutions which exhibit more contrary motion.
 
