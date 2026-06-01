@@ -113,7 +113,7 @@ The solver starts by deciding on the indices of the cantus firmus line to be div
 
 \paragraph{Overlapping Segments}
 
-Horizontal constraints spanning consecutive time steps require special care at segment boundaries. The overlap size, \verb|OVERLAP| is chosen to be 4 to ensure consecutive segments abide by the \emph{no more than three leaps} rule. Since the predicate \verb|fourLeaps| checks the next time steps up to \verb|T+4|, we insert the \verb|cp| values found by the solver for segment \verb|i+1| to the end of the input as closed facts directly into Dusa solver for segment \verb|i|. The order of calling the solver is from the last segment to the first.
+Horizontal constraints spanning consecutive time steps require special care at segment boundaries. The overlap size \verb|OVERLAP| is chosen to be 4 to ensure consecutive segments abide by the \emph{no more than three leaps} rule. Since the predicate \verb|fourLeaps| checks the next time steps up to \verb|T+4|, we insert the \verb|cp| values found by the solver for segment \verb|i+1| to the end of the input as closed facts directly into the Dusa solver for segment \verb|i|. The order of calling the solver is from the last segment to the first.
 \begin{verbatim}
 for (let i = 0; i < fixedCp.length; i++) {
     inputCf += `cp ${fixedCpStartLocal + i} is
@@ -127,7 +127,7 @@ Writing these as closed facts prevents the solver from reconsidering those steps
 
 Because certain constraints apply only at specific positions in the melody, namely the starting and ending interval rules, prohibition on unisons in the middle, and the cadence rule, we adapted \texttt{counterpoint\_opt.du} into three variant Dusa solvers for the beginning, middle, and ending segments respectively, each enforcing only the constraints appropriate to its position.
 
-Calls to the Dusa solver are made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from \verb|child_process| module to enable interruptions if no solutions are found. The maximum number of attempts per segment and the timeout limit are set to 5 and 2000ms respectively.
+Calls to the Dusa solver are made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from the \verb|child_process| module to enable interruptions if no solutions are found. The maximum number of attempts per segment and the timeout limit are set to 5 and 2000ms respectively.
 
 \paragraph{Findings}
 The approach performed well in practice, solving one segment in approximately 224ms on average with a chunk size of 10, and scaling linearly with the number of segments.
@@ -135,5 +135,5 @@ However, the current implementation does not employ a backtracking mechanism, wh
 Between the architectural complexity of the divide-and-conquer algorithm and the observed failure mode, we did not investigate it further.
 
 Nonetheless, the divide-and-conquer implementation holds several takeaway lessons.
-We learned that generation of long counterpoints should not be dismissed as exponentially-complex when a subexponential algorithm exists that not only generates correct counterpoints in principle but interesting ones in practice.
+We learned that generation of long counterpoints should not be dismissed as exponentially complex when a subexponential algorithm exists that not only generates correct counterpoints in principle but interesting ones in practice.
 The existence of this substantially different algorithm also highlights that counterpoint generation is not a creative process for the end user alone; rather there is substantial space available for creativity in the design and implementation of counterpoint generation algorithms themselves.

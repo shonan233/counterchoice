@@ -23,7 +23,7 @@ CounterChoice centers around a Dusa logic program that encodes the rules of firs
 \begin{tabular}{l|l}
 \textbf{Predicate} & \textbf{Meaning} \\ \hline
 \verb|cf T is N| & \verb|T|\textsuperscript{th} note of c.f. has pitch \verb|N| \\
-\verb|length T| & c.f. ends on \verb|T|\textsuperscript{th} note \\
+\verb|length is T| & c.f. ends on \verb|T|\textsuperscript{th} note \\
 \verb|cpNote T is N| & \verb|T|\textsuperscript{th} note of c.p. has pitch \verb|N| \\
 \verb|interval I is N| & \verb|I| is a consonant interval of size \verb|N| \\
 \verb|cp T is? I| & \verb|T|\textsuperscript{th} note of c.p. is \verb|I| above \verb|cf T| \\
@@ -36,7 +36,7 @@ CounterChoice centers around a Dusa logic program that encodes the rules of firs
 \end{figure}
 
 
-We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C4 (when $\mathtt{N}=0$), D4, \dots, B4, C5 (when $\mathtt{N}=7$), along with a predicate \verb|length T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody. There is no need to encode the information of duration, because the two melodies move in the exact same rhythm.
+We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C4 (when $\mathtt{N}=0$), D4, \dots, B4, C5 (when $\mathtt{N}=7$), along with a functional predicate \verb|length is T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody. There is no need to encode the information of duration, because the two melodies move in the exact same rhythm.
 
 \begin{verbatim}
   cf 0 is 1.
