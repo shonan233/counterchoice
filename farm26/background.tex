@@ -107,13 +107,13 @@ example (not an actual rule in our system):
   cp T is I :- cf T is N, plus N 2 is I.
 \end{verbatim}
 
-One can read the \verb|:-| symbol as a ``backwards implication''
-and the comma \verb|,| as conjunction. Thus,
+One can read the `\verb|:-|' symbol as a ``backwards implication''
+and the comma `\verb|,|' as conjunction. Thus,
 this rule says that whenever the cantus firmus at time step \verb|T| is the
 note \verb|N|, and the sum of \verb|N| and $2$ is \verb|I|,
 it {\em must} be the case that the counterpoint at time step
 \verb|T| is \verb|I|. The comma-separated predicates to the right of the
-\verb|:-| symbol are the {\em premises} of the rule, and the
+`\verb|:-|' symbol are the {\em premises} of the rule, and the
 single predicate to its left is the {\em head} of the rule.
 
 A {\em fact} is simply a rule with no premises. In Dusa,
