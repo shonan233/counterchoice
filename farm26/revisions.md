@@ -67,6 +67,11 @@ Added quotes.
 
 > **The biggest gap is evaluation.** The tool is framed around casual creators, autotelic creativity, and mixed-initiative affordances, yet all evidence is the authors' own qualitative experience as developers. That's a legitimate and clearly-labeled choice, but the claims about accessibility "to users with little prior background in music" and a "tight feedback loop" are design *goals*, not findings. Even a small informal study (a handful of musicians and non-musicians) would let you say something evaluative about the interface rather than aspirational.
 
+Yigit and Youyou can probably do a user study on Friday. Background of potential participants:
+
+- Student A: Plays piano and composes game music. Has basic music theory knowledge. No experience with logic programming.
+- Student B: Plays flute in the Science Tokyo orchestra. No experience with logic programming.
+
 > **The divide-and-conquer section felt out of place.** The honesty is commendable, but as written, the alternative-algorithm section reads as an interesting aside that slightly dilutes the paper's focus.
 
 > **RQ3 recommendations are sensible but somewhat generic.** "Avoid premature optimization," "allow RNG seeding," "make the search space inspectable," and "add static warnings for unreachable rules" are reasonable, but (mostly) common knowledge (you even admit this about premature optimization). The most distinctive one is the observation that *failing* branches of search dominate program behavior and are largely uninspectable. I suggest leading with and deepening that point; it's the recommendation most specific to logic-programming creativity tools and least likely to appear elsewhere.
@@ -74,3 +79,5 @@ Added quotes.
 > **There's a bit of a gap in your references.** You did a great job with references on logic-programming and HCI/creativity, but I feel like you overlooked a few relevant papers in computational *music*. For instance, [Anders and Miranda's 2011 ACM Computing Surveys article](https://dl.acm.org/doi/pdf/10.1145/1978802.1978809) came up in my search, comparing generic music-constraint systems and noting that constraint programming's declarative, rule-as-specification style mirrors how music theory is traditionally written. There's also Ebcioğlu's work in the 1980s (e.g., https://quod.lib.umich.edu/i/icmc/bbp2372.1980.041/1 and https://quod.lib.umich.edu/i/icmc/bbp2372.1986.086/1) that seems very relevant. He created BSL, an efficient logic programming language, specifically for harmonizing four-part chorales. Lastly, I found that [Ovans and Davison (1992)](https://core.ac.uk/outputs/24336905/) built an interactive constraint-satisfaction system for first-species counterpoint with a GUI. Your version has new features compared to theirs (e.g., showing multiple valid solutions, a modern web interface), which would be easy to call out.
 
 > **Smaller points.** The static music-notation figures (the "good" vs. "bad" examples on p. 2) carry little weight in print since the audio is the real evidence.  Consider annotating them to highlight the specific parallel fifths/dissonances you reference, so the contrast is legible without leaving the page. The validation-via-reference-implementation and regression-testing methodology is a nice, underplayed strength worth a sentence more; that could even be another RQ3 result considering it's good advice for anyone building generative logic-programming tools.
+
+Added annotations to the bad example.
