@@ -235,13 +235,13 @@ UI to offer the user a look inside the system.
 
 \subsection{Tooling}
 The frontend implementation is not limited to the GUI proper, because tooling was also developed client-side to support the validation, debugging, and benchmarking of CounterChoice throughout its development process.
-Though these tools are small, they provided essential continuity as we revised and rewrote the Dusa program multiple times throughout the project, adding more rules of counterpoint, correcting bugs, and optimizing performance. 
+Though these tools are small, they provided essential continuity as we revised and rewrote the Dusa program multiple times throughout the project, adding more rules of counterpoint, correcting bugs, and optimizing performance.
 
 These tools are written in JavaScript using the Dusa API, and generally append an input cantus firmus---represented as a list of \verb|cf T is N| and \verb|length is T| facts---to a Dusa program implementing the rules of counterpoint (e.g., as described in Section~\ref{sec:dusa-implementation}).
 
 \paragraph{MIDI output}
 
-At the start of the CounterChoice project, we wrote a JavaScript tool which combines the cantus firmus and generated counterpoint melody into a MIDI file. 
+At the start of the CounterChoice project, we wrote a JavaScript tool which combines the cantus firmus and generated counterpoint melody into a MIDI file.
 Rendering Dusa solutions as audio made the output much more tangible, and provided a simple way to check whether the output is sensible.
 
 \paragraph{Validation}
