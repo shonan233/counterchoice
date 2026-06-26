@@ -66,7 +66,6 @@ Understanding this failing space is essential to understanding buggy program beh
 %Logic programs excel at automatically searching large search spaces that emerge from small rule sets, but the failed branches of search are just as important to understanding overall program behavior as successful branches are.
 %There are often millions of such failed branches, far more than a human programmer can efficiently inspect by hand.
 \emph{Design Recommendation:} Provide scalable means to inspect space of intermediate search states, especially failing states.
-
 \emph{Examples:} For each solution, allow rewinding its proof step-by-step. At each step, show alternative branches and indicate which ones fail. 
 For large state spaces, display a limited set of intermediate and failing spaces.
 Select these sets to maximize the variety of rules applied in intermediate states and the variety of predicates present in failing states.
@@ -79,7 +78,6 @@ We thus recommend hybrid static-dynamic checking.
 %In functional programming languages, strong type systems are commonly provided which rule out broad classes of errors before execution.
 %Because logic programs are search-based, reachability information is limited until runtime, and static computations of reachability may need to rely on approximations.
 \emph{Design Recommendations:} Provide hybrid static-dynamic unreachable code detection mechanisms.
-
 \emph{Examples:} Statically detect premises containing undefined predicates (typos). Statically compute a predicate dependency graph to identify provably-unreachable predicates. 
 Dynamically report rules that occur nowhere in the search space or solution space. Report never-satisfied premises of such rules.
 
@@ -89,14 +87,12 @@ The Dusa implementation is not heavily optimized.
 With no changes to this Dusa, improvements to the design of CounterChoice's core rule set increased the length of supported compositions 
 from about 12 notes to 50 notes, because  small rule changes can greatly reduce search space size.
 \emph{Design Recommedation:} To support optimization, support identification of search space redundancies.
-
 \emph{Examples:} Display multiple search paths that led to the same solution. Allow the programmer to indicate which predicates represent a program's final output, then identify multiple solutions corresponding to an identical final output.
 
 Search space optimization is subtle in particular because Dusa's search is randomized, as appropriate for procedural content generation.
 However, different random seeds greatly impact explored state counts and running times, so that it is not always clear whether a given change improved performance.
 This randomness must be accounted for debugging mechanisms.
 \emph{Design Recommendation:} Build randomization into the debugging process.
-
 \emph{Examples:} Allow fixing a random seed to better measure effects of a given change. Run the same program on multiple seeds and visualize the distribution of performance results.
 
 The common theme between all our recommendations is that logic programming is programming with possibility spaces, so debugging should be conceptualized at the space level as well.
@@ -118,45 +114,4 @@ The common theme between all our recommendations is that logic programming is pr
 % implementing other interface concepts without making many changes to the worker.
 %\end{itemize}
 
-\subsection{Alternative Algorithm: Divide-and-Conquer}
 %\CA{This subsection was moved here from Section~\ref{sec:dusa-implementation}.}
-CounterChoice, as implemented, has successfully addressed our research questions.
-However, it is important to recognize that alternative design and implementation decisions are possible.
-To this end, we explore an alternative divide-and-conquer algorithm which we prototyped during the development process before settling on the algorithm documented in Section~\ref{sec:dusa-implementation}.
-
-Though the CounterChoice implementation can solve cantus firmi of 50 notes, its exponential complexity is a clear limitation for long pieces.
-To handle such cases, we developed an alternative \emph{divide-and-conquer} approach using JavaScript where the cantus firmus is divided into overlapping segments based on index boundaries, each one is solved independently by the Dusa solver, and the results are assembled into a complete counterpoint line. 
-The strength of this approach is that bounding the length of each segment bounds the extent of exponential slowdown.
-The divide-and-conquer approach has a natural musical motivation as well; composers often work phrase by phrase rather than treating every note with equal global importance.
-Despite these strengths, the key conceptual weakness of the divide-and-conquer approach is that it cannot claim to be fully implemented in Dusa, relying extensively on JavaScript code that invokes the Dusa solver repeatedly and assembles its outputs.
-
-\paragraph{Segment Indices}
-
-The solver starts by deciding on the indices of the cantus firmus line to be divided into segments. Segment and overlap size are defined using \verb|CHUNK_SIZE| and \verb|OVERLAP| respectively, which are set to be 10 and 4. For each segment until the last, indices from the starting index to the starting index plus \verb|CHUNK_SIZE| are selected, and the next segment's starting index is incremented by $\verb|CHUNK_SIZE|-\verb|OVERLAP|$ (e.g. the first segment is [0-9], the second one is [6-15]). When remaining indices are fewer than \verb|OVERLAP|, they are added into the last segment's indices to prevent creating a short segment at the end. Later, cantus firmus notes of the selected indices are extracted from the input, and the solver is run on each segment separately using local indexing.
-
-\paragraph{Overlapping Segments}
-
-Horizontal constraints spanning consecutive time steps require special care at segment boundaries. The overlap size \verb|OVERLAP| is chosen to be 4 to ensure consecutive segments abide by the \emph{no more than three leaps} rule. Since the predicate \verb|fourLeaps| checks the next time steps up to \verb|T+4|, we insert the \verb|cp| values found by the solver for segment \verb|i+1| to the end of the input as closed facts directly into the Dusa solver for segment \verb|i|. The order of calling the solver is from the last segment to the first.
-\begin{verbatim}
-for (let i = 0; i < fixedCp.length; i++) {
-    inputCf += `cp ${fixedCpStartLocal + i} is
-    ${fixedCp[i]}.\n`;
-}
-\end{verbatim}
-
-Writing these as closed facts prevents the solver from reconsidering those steps and avoids duplicate solutions in the overlapping region.
-
-\paragraph{Specialized Solvers}
-
-Because certain constraints apply only at specific positions in the melody, namely the starting and ending interval rules, prohibition on unisons in the middle, and the cadence rule, we adapted \texttt{counterpoint\_opt.du} into three variant Dusa solvers for the beginning, middle, and ending segments respectively, each enforcing only the constraints appropriate to its position.
-
-Calls to the Dusa solver are made with a function named \verb|solveChunk|, which takes parameters such as the current segment, segment's type, and fixed \verb|cp| values. Inside \verb|solveChunk|, calls to Dusa files are made using the \verb|execFileSync| function from the \verb|child_process| module to enable interruptions if no solutions are found. The maximum number of attempts per segment and the timeout limit are set to 5 and 2000ms respectively.
-
-\paragraph{Findings}
-The approach performed well in practice, solving one segment in approximately 224ms on average with a chunk size of 10, and scaling linearly with the number of segments.
-However, the current implementation does not employ a backtracking mechanism, which means the main failure mode is that the solver occasionally gets stuck on a random segment. Although the performance is very promising, the implementation described in Section~\ref{sec:dusa-implementation} can already generate counterpoint melodies with 50 notes, which is already sufficient for all compositions the authors wished to develop.
-Between the architectural complexity of the divide-and-conquer algorithm and the observed failure mode, we did not investigate it further.
-
-Nonetheless, the divide-and-conquer implementation holds several takeaway lessons.
-We learned that generation of long counterpoints should not be dismissed as exponentially complex when a subexponential algorithm exists that not only generates correct counterpoints in principle but interesting ones in practice.
-The existence of this substantially different algorithm also highlights that counterpoint generation is not a creative process for the end user alone; rather there is substantial space available for creativity in the design and implementation of counterpoint generation algorithms themselves.
