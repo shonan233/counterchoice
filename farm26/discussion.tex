@@ -1,7 +1,7 @@
 \section{Discussion}
 \label{sec:discussion}
-We discuss findings pertinent to our research questions and describe an
-alternative back-end design we explored that contributed further insights.
+% We discuss findings pertinent to our research questions and describe an
+% alternative back-end design we explored that contributed further insights.
 
 %\YE{These are simply some comments that I thought might be helpful to the person writing the discussion part, not meant to be a draft of the Discussion section.}
 
@@ -97,6 +97,35 @@ This randomness must be accounted for debugging mechanisms.
 
 The common theme between all our recommendations is that logic programming is programming with possibility spaces, so debugging should be conceptualized at the space level as well.
 
+\subsection{User Experience}
+Although CounterChoice is at an early stage of development, we conducted a small,
+informal user study to gather feedback on the current prototype.
+The participants consisted of two undergraduate students familiar with music and
+one graduate student familiar with logic programming, all from the last author's
+research group.
+We asked the participants to freely play around with the web application and
+share with us their experience as a user.
+Below are some comments and suggestions we received from the participants.
+
+\begin{itemize}
+  \item It was fun!
+  \item The generated solutions sound pretty good.
+  \item The piano roll interface is convenient for computer music composers.
+    Providing an additional sheet music interface would be beneficial for
+    music performers.
+  \item Some solutions include a lot of parallel thirds and sixths, whereas
+    contrary motion is generally preferred in counterpoint composition.
+  \item The tool should allow intervals larger than an octave.
+  \item The Dusa code was hard to understand without knowing what \texttt{cf},
+    \texttt{cpNote}, etc. stand for.
+\end{itemize}
+
+The feedback shows that the participants generally enjoyed co-creating
+counterpoint with CounterChoice, at least to some extent.
+On the other hand, they quickly recognized the limitations and inconveniences
+of the current implementation.
+We aim to improve both the frontend and backend so that the tool can better
+serve casual creators.
 
 %\begin{itemize}
 %    \item Dusa does not give any warning when any of the premises for a rule is meaningless, meaning that when there is a typo in the %premise, or when the premise never holds, the rule is never triggered. This is hard to debug.
