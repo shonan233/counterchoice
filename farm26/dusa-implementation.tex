@@ -314,7 +314,7 @@ facts, which represent the generated counterpoint:
 
 \subsection{Extension: Dynamic-Programming Approach}
 \label{sec:dynamic-programming}
-In practice, the core algorithm provides acceptable performance for cantus firmi up to 50 notes, which sufficed for our needs.
+In practice, the above algorithm can solve 30-note cantus firmi in 1--2 seconds, which sufficed for our needs.
 In principle, a polynomial time algorithm is desirable for even longer pieces.
 We present such an algorithm, \emph{divide-and-conquer} approach inspired by how composers often work phrase-by-phrase.
 This algorithm is conceptualized as a series of separate searches for each (overlapping) phrase, which are then assembled to create a full piece.
