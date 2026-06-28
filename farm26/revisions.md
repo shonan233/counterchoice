@@ -105,10 +105,7 @@ Chris
 
 > **The biggest gap is evaluation.** The tool is framed around casual creators, autotelic creativity, and mixed-initiative affordances, yet all evidence is the authors' own qualitative experience as developers. That's a legitimate and clearly-labeled choice, but the claims about accessibility "to users with little prior background in music" and a "tight feedback loop" are design *goals*, not findings. Even a small informal study (a handful of musicians and non-musicians) would let you say something evaluative about the interface rather than aspirational.
 
-Youyou and Yigit will do a user study later this week. Background of potential participants:
-
-- Student A: Plays piano and composes game music. Has basic music theory knowledge. No experience with logic programming.
-- Student B: Plays flute in the Science Tokyo orchestra. No experience with logic programming.
+Youyou and Yigit did a user study and added a new section.
 
 
 > **The divide-and-conquer section felt out of place.** The honesty is commendable, but as written, the alternative-algorithm section reads as an interesting aside that slightly dilutes the paper's focus.
