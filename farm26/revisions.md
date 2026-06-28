@@ -41,7 +41,7 @@ Chris
 
 > l 888 Can you say something about speed? I'm not looking for benchmarks -- but a rough number of how long you need to wait to generate (all) solutions? The current implementation is capable of solving up to 50 notes -- but does that take seconds, minutes or hours?
 
-Carlo
+Carlo added a short paragraph in the "Benchmarking" part of Section 4.4.
 
 
 > l 860 - It is interesting that Javascript caught bugs... We usually think of declarative languages as being more readable and closer to the human specification. Is there a more general lesson to be learned here? Why do we need imperative languages - such as Javascript - to debug our beautiful declarative executable specifications? Perhaps one might state more broadly that validation and testing against logical errors in the specification remains important.
@@ -75,7 +75,7 @@ Any volunteer?
 > let's say that this fact didn't occur to the user, would it still work (but
 > slower)?
 
-Carlo
+Carlo improved the phrasing to sidestep this question.
 
 
 > You have predicates for the interval of the counterpoint melody, and then you
@@ -93,7 +93,7 @@ Carlo
 > I believe this is only true of first species counterpoint, but I guess the
 > whole application assumes first species...
 
-Carlo (maybe remind the reader that we only deal with first species)
+Carlo added "first-species" (maybe remind the reader that we only deal with first species)
 
 
 # Review C

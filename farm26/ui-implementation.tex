@@ -257,8 +257,11 @@ As we experimented with multiple Dusa implementations, we found it useful to per
 
 \paragraph{Benchmarking}
 
-Though runtime performance is not a primary research objective, we found that different ways of phrasing the constraints within Dusa had dramatic impacts on the time to first solution, and importantly, the length of cantus firmus for which we could find a solution before running out of memory. (Indeed, the search space is exponential.)
+Although runtime performance was not our primary concern, we found that different ways of phrasing the constraints within Dusa had dramatic impacts on the time to first solution, and importantly, the length of cantus firmus for which we could find a solution before running out of memory. (Indeed, the search space is exponential.)
 
 An early version of our Dusa code based around a monolithic \verb|judgeCP T I is {good,bad}| predicate got stuck on cantus firmi longer than about 12 notes. Reworking this around separate \verb|#forbid|den predicates increased the limit to over 30 notes, and further refinements allow our current implementation to solve cantus firmi with 50 notes.
 
-While fine-tuning the implementation, we found it helpful to write a simple script which measures the amount of time it takes Dusa to compute a first solution for the same cantus firmus across multiple trials, given that Dusa is nondeterministic. We also experimented with manually seeding the random number generator at the start of this script, so that the benchmark itself would return the same results across multiple runs.
+To help fine-tune the implementation, we wrote a simple script to measure the amount of time it takes Dusa to compute a first solution for the same cantus firmus across multiple trials, given that Dusa is nondeterministic. We also experimented with manually seeding the random number generator at the start of this script, so that the benchmark itself would return the same results across multiple runs.
+
+To give a rough idea, we can find the first solution for a 10-note cantus firmus in 24ms (and all 410 solutions in 9.5 seconds), the first solution for 30 notes in 1.8 seconds, and the first solution for 50 notes in 6 minutes and 40 seconds.
+

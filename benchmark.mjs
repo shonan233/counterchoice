@@ -51,6 +51,7 @@ for (const rulesFile of RULES_FILES) {
     const start = Date.now();
     const solver = new Dusa(program).solve();
     const next = solver.next();
+    // time to all solutions: use solver.all() instead of solver.next()
     const stats = solver.stats();
     const elapsed = Math.round(Date.now() - start);
 

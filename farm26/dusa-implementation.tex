@@ -54,13 +54,13 @@ We represent the cantus firmus as a functional predicate \verb|cf T is N| mappin
 
 We likewise represent the counterpoint melody as a functional predicate \verb|cpNote T is N| with $\mathtt{N}\in\{0,1,\dots,13\}$.
 
-The remainder of the Dusa predicates and rules, listed in Figures~\ref{fig:dusa-predicates} and \ref{fig:dusa-constraints}, enforce various properties of \verb|cpNote| drawn from a mixture of Fux's rules of first species counterpoint~\cite{fux-cp} and ToneSavvy's interactive counterpoint exercises~\cite{tonesavvy}. Some of these properties are \emph{vertical} in that they relate the values of \verb|cf T| and \verb|cpNote T| at a single \verb|T|, whereas others are \emph{horizontal} in that they relate to the motion of one or both melodies across multiple consecutive time steps.
+The remainder of the Dusa predicates and rules, listed in Figures~\ref{fig:dusa-predicates} and \ref{fig:dusa-constraints}, enforce various properties of \verb|cpNote| drawn from a mixture of Fux's rules of first-species counterpoint~\cite{fux-cp} and ToneSavvy's interactive counterpoint exercises~\cite{tonesavvy}. Some of these properties are \emph{vertical} in that they relate the values of \verb|cf T| and \verb|cpNote T| at a single \verb|T|, whereas others are \emph{horizontal} in that they relate to the motion of one or both melodies across multiple consecutive time steps.
 
 
 
 \paragraph{Intervals and consonance}
 
-A key rule of counterpoint is that \emph{the interval between the cantus firmus and counterpoint must be consonant}, namely a unison, third, fifth, sixth, or octave. For simplicity we assume that the counterpoint melody is always \emph{above} the cantus firmus by one of these intervals, and we do not distinguish between major/minor or perfect/augmented/diminished intervals.
+A key rule of first-species counterpoint is that \emph{the interval between the cantus firmus and counterpoint must be consonant}, namely a unison, third, fifth, sixth, or octave. For simplicity we assume that the counterpoint melody is always \emph{above} the cantus firmus by one of these intervals, and we do not distinguish between major/minor or perfect/augmented/diminished intervals.
 
 We use the functional predicate \verb|interval I is N| as a ``lookup table'' mapping the names of consonant intervals to pitch differences (e.g., the pitch a \verb|third| above \verb|N| is $\texttt{N}+2$).
 
@@ -72,7 +72,7 @@ We use the functional predicate \verb|interval I is N| as a ``lookup table'' map
   interval octave is 7.
 \end{verbatim}
 
-Because the consonance requirement dramatically reduces the state space---it restricts the counterpoint melody to one of five possible values per time step---we found it useful to center our Dusa implementation around this restriction. We specify the predicate \verb|cp T is? I| as an open choice requiring each time step to map to one of the five consonant intervals.
+Because the consonance requirement dramatically reduces the state space---it restricts the counterpoint melody to one of five possible values per time step---we choose to center our Dusa implementation around this restriction. We specify the predicate \verb|cp T is? I| as an open choice requiring each time step to map to one of the five consonant intervals.
 %
 \begin{verbatim}
   cp T is? I :-
