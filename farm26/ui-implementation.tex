@@ -130,16 +130,15 @@ and the raw predicate output of the solver.
     \end{minipage}
 \end{figure*}
 
-A screenshot of the CounterChoice prototype, from the user's
-perspective, is in Figure~\ref{fig:ui}. It consists of the following
-elements:
+Figure~\ref{fig:ui} contains a screenshot of the CounterChoice prototype user
+interface, consisting of the following elements:
 
 \paragraph{Notes Editor}
 The notes editor is a ``piano roll''-style editor, inspired by BeepBox~\cite{beepbox}.
 The current editor state is rendered to an HTML \verb|<canvas>| element.
 The interface resembles a piano roll with 15 notes (notes C2-C4 in C-major) and 8 time steps.
-Clicking on a note will set it as the cantus firmus for that time step.
-Shift-clicking will set the counterpoint at that time.
+Clicking on a note sets it as the cantus firmus for that time step.
+Shift-clicking sets the counterpoint at that time.
 
 \paragraph{Enabled Rules}
 The UI includes a series of checkboxes, corresponding to individual rules in
@@ -165,8 +164,8 @@ Selecting a solution populates its counterpoint track as the constraints in the
 editor. The user can then make changes to it or remove some notes to generate
 another set of solutions.
 
-Under the buttons, there are one or two dropdown elements that list Dusa facts
-that were generated as part of the solution. If a solution is invalid
+Under the buttons, there are one or two dropdown elements listing the Dusa facts
+generated as part of the solution. If a solution is invalid
 counterpoint, the orange violations list will appear listing all deductions that
 resulted in this solution being invalid. In all solutions, the ``See generated
 facts'' dropdown will list {\em all} facts that were part of this solution.
@@ -191,28 +190,26 @@ point at which the web code interfaces with a Dusa program or its API.
 
 \paragraph{Data Representation}
 
-Notes are represented as numbers, the same way as in the Dusa program, for ease
+Notes are represented as numbers as in the Dusa program, for ease
 of translation. The numbering also aligns with the indices of the notes in the
 editor. The cantus firmus must be fully entered, so it is sufficient to
 represent it as an array of note values. Frozen cantus firmus positions are
 sparse and will likely have holes, so they are represented as
-\verb|[number, Note][]|, with the index and value the user selected. Each of
-these will correspond to exactly one fact included in the Dusa program (not
-including the \verb|length is N.| fact).
+\verb|[number, Note][]|, with the index and value the user selected, each
+corresponding to exactly one Dusa fact (not including the fact \verb|length is N.|).
 
 The checkboxes for enabled rules also directly correspond to state values in the
 React component: an object whose keys are the rule name shown on screen, with
-Boolean values representing the state of the box. Changes to the boxes will
-update this state value. The worker includes information about whether each of
-these rules is a \verb|#forbid| or \verb|#demand|, and how many arguments it
-expects. The state of this object corresponds to which declarations are
-in the generated program.
+Boolean values representing the state of the box. Changes to the boxes update
+this state value and thus which declarations are included in the generated program.
+The worker includes information about whether each of these rules is a
+\verb|#forbid| or \verb|#demand|, and how many arguments it expects.
 
 \paragraph{Dusa Worker}
 Since Dusa works synchronously while generating a solution, we need to offload
 its work from the main thread so that the UI can remain responsive even while
 it is working on generating solutions. To achieve this, the interface creates a web worker
-that sends a message to the main thread every time a solution gets generated.
+that sends a message to the main thread every time a solution is generated.
 These messages are then packaged into an async generator so that we can loop
 over the solutions with a \verb|for await ... of| loop.
 %JIM: I am wary of any "can be used easily" claims without evidence:
@@ -220,17 +217,16 @@ over the solutions with a \verb|for await ... of| loop.
 %ROSE: Agreed.
 
 The worker takes as input the cantus firmus and the specified notes of the
-counterpoint, as well as the rules that should be enabled. It generates strings
-corresponding to the relevant \verb|#demand| and \verb|#forbid| rules, and the
-facts for specifying notes. Upon generating a solution, it transforms the raw
+counterpoint, as well as the rules that should be enabled, and generates strings
+corresponding to the relevant \verb|#demand| and \verb|#forbid| rules as well as
+the specified notes. Upon generating a solution, it transforms the raw
 facts back into the notes for each track. To facilitate users being able to
 see into the internals of the program, we also pass along the final generated
-Dusa programs, and all facts that were generated as part of the solution:
-specifically flagging facts that denote a solution being an invalid
-counterpoint.
+Dusa programs, and all facts that were generated as part of the solution,
+specifically flagging facts indicating violations of counterpoint rules.
 %JIM: I might quibble that "being displayed to the user" is, in fact, a use!
 %ROSE: Agreed. Revised. Better?
-The raw information is not processed further in the backend, but is simply passed along to the
+This raw information is not processed further in the backend, but is simply passed along to the
 UI to offer the user a look inside the system.
 
 \subsection{Tooling}

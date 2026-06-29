@@ -80,8 +80,8 @@ foundation for writing logic programs that combine deductive specification
 and mutual-exclusion constraints. The meaning of such a program, rather
 than a single canonical model, is the full {\em collection} of models
 consistent with the theory represented by the program. This paradigm is
-similar to that of answer set programming~\cite{lifschitz2019answer},
-but it more naturally supports the characterization of
+similar to answer set programming~\cite{lifschitz2019answer},
+but more naturally supports the characterization of
 {\em infinite} collections of satisfying models, and a corresponding
 operational model that stochastically explores the search space of
 these models, producing them lazily. This operational model is realized by
@@ -119,9 +119,8 @@ single predicate to its left is the {\em head} of the rule.
 A {\em fact} is simply a rule with no premises. In Dusa,
 every logic variable appearing in the head of a rule must
 occur in its premises, so facts must mention only {\em ground terms}, those
-that do not contain any logic variables. For example, here is a fact
-that asserts the counterpoint interval at time step $0$ is
-a fifth:
+that do not contain any logic variables. For example, this fact
+asserts that the counterpoint interval at time step $0$ is a fifth:
 
 \begin{verbatim}
   cp 0 is fifth.
