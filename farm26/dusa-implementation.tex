@@ -19,7 +19,7 @@
 
 CounterChoice centers around a Dusa logic program that encodes the rules of first-species counterpoint as constraints between a cantus firmus and a counterpoint melody represented as logical predicates (Figure~\ref{fig:dusa-predicates}). For a fixed cantus firmus, solutions of this Dusa program contain valid counterpoint lines for the given melody.
 This core algorithm is presented in Section \ref{sec:core-algorithm}.
-An experimental extension is proposed in Section \ref{sec:dynamic-programming} which uses dynamic programming to achieve polynomial complexity for longer pieces.
+An experimental extension is proposed in Section \ref{sec:divide-and-conquer} which uses dynamic programming to achieve polynomial complexity for longer pieces.
 
 \subsection{Core Algorithm}
 \label{sec:core-algorithm}
@@ -312,10 +312,10 @@ facts, which represent the generated counterpoint:
 
 % \CM{do we want to show cp or cpNote? or "at"?}
 
-\subsection{Extension: Dynamic-Programming Approach}
-\label{sec:dynamic-programming}
+\subsection{Extension: Divide-and-Conquer Approach}
+\label{sec:divide-and-conquer}
 In practice, the above algorithm can solve 30-note cantus firmi in 1--2 seconds, which sufficed for our needs.
-In principle, a polynomial time algorithm is desirable for even longer pieces.
+In principle, a more scalable algorithm is desirable for even longer pieces.
 We present such an algorithm, \emph{divide-and-conquer} approach inspired by how composers often work phrase-by-phrase.
 This algorithm is conceptualized as a series of separate searches for each (overlapping) phrase, which are then assembled to create a full piece.
 Because Dusa execution is understood as a single search, we chose to use JavaScript to invoke Dusa repeatedly and combine the results; this JavaScript dependency is a main limitation of the algorithm.
@@ -345,7 +345,7 @@ Calls to the Dusa solver are made with a function named \verb|solveChunk|, which
 \paragraph{Findings}
 The approach performed well in practice, solving one segment in approximately 224ms on average with a chunk size of 10, and scaling linearly with the number of segments. It found the first solution for a 50-note cantus firmus in 1.6 seconds.
 However, the current implementation does not employ a backtracking mechanism, so it can fail when the solver occasionally gets stuck on some segment. Due to this failure mode and the satisfactory performance of the core algorithm, the core algorithm is used in the CounterChoice web interface.
-Nonetheless, the divide-and-conquer implementation provides valuable evidence that polynomial-time algorithms is feasible.
+Nonetheless, the divide-and-conquer implementation provides valuable evidence that a significantly more efficient approach is feasible.
 The existence of this substantially different algorithm also highlights that counterpoint generation is not a creative process for the end user alone; rather there is substantial space available for creativity in the design and implementation of counterpoint generation algorithms themselves.
 
 %Although the performance is very promising, the implementation described in Section~\ref{sec:dusa-implementation} can already generate counterpoint melodies with 50 notes, which is already sufficient for all compositions the authors wished to develop.
