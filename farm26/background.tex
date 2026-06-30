@@ -75,17 +75,24 @@ rules.
 
 \subsection{Finite-Choice Logic Programming in Dusa}
 
-Finite-choice logic programming~\cite{martens2025finite} is a new
+Finite-choice logic programming~\cite{martens2025finite} (FCLP) is a new
 foundation for writing logic programs that combine deductive specification
-and mutual-exclusion constraints. The meaning of such a program, rather
-than a single canonical model, is the full {\em collection} of models
-consistent with the theory represented by the program. This paradigm is
-similar to answer set programming~\cite{lifschitz2019answer},
-but more naturally supports the characterization of
-{\em infinite} collections of satisfying models, and a corresponding
-operational model that stochastically explores the search space of
-these models, producing them lazily. This operational model is realized by
-the Dusa implementation.\footnote{\url{https://github.com/robsimmons/dusa}}
+and mutual-exclusion constraints. Unlike more established logic programming
+languages like Datalog and Prolog, whose meaning is a single canonical
+(smallest) model justified by the rules, the meaning of an FCLP program is
+the full collection of models consistent with the theory represented by the
+program.  This paradigm is similar to answer set
+programming~\cite{lifschitz2019answer}, but unlike ASP, it is designed to support
+forward-chaining operational semantics (similar to Datalog) that
+incrementally enumerates solutions (and thus more naturally represents
+infinite collections of models). 
+Dusa\footnote{\url{https://github.com/robsimmons/dusa}} is FCLP's reference
+implementation, which stochastically explores the search space and emits
+solutions lazily. The combination of (1) declarative representation via
+relations (shared with Prolog and Datalog), (2) mutual-exclusion
+constraints that give rise to multiple valid models (shared with ASP), and (3)
+lazy stochastic search for generating those models (unique to Dusa) 
+made it an attractive choice for this application.
 
 A Dusa program, like all logic programs, consists of a collection
 of logical {\em rules} and {\em facts} that specify valid deductions
@@ -155,18 +162,24 @@ accept.
 In addition, Dusa has {\em open} rules, notated with the
 (\verb|is?|) keyword, which permit
 but do not require the attribute to accept the values.
+(In general, attributes need not be associated with any value,
+and indeed will not be unless a rule justifies it.)
 The following two rules can coexist and produce a non-empty
 set of models:
 
 \begin{verbatim}
   my_interval is? {third, fifth, unison}.
-  my_interval is octave.
+  my_interval is octave :- flag is on.
+  flag is {on, off}.
 \end{verbatim}
 
 The only valid solutions would assign the interval
 to be \verb|octave|. Intuitively, one may think of open
 rules as describing ``defaults'' which may be overridden
-by closed rules.
+by closed rules. Our code uses open rules to describe the
+full set of possible intervals, which is refined
+by closed rules in the presence of certain constraints
+(see ``Intervals and consonance'' in Section~\ref{sec:dusa-implementation}).
 
 \subsubsection{Syntactic Sugar}
 
