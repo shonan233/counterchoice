@@ -226,13 +226,12 @@ is a JavaScript API for creating ``solver'' instances
 that can be queried asynchronously (or as a generator), which
 we employ in our implementation.
 
-Finding solutions to finite-choice logic programs
-is NP-hard: it is fairly trivial to use it to express
-SAT solving. In addition, Dusa is a research prototype and not finely tuned
-for efficiency, unlike modern SAT solvers and answer set solvers
-based on them. Expressing programs in a way that Dusa can
-(relatively) efficiently find solutions is a challenge,
-which we discuss in Section~\ref{sec:discussion}.
+Finding solutions to finite-choice logic programs is NP-hard: it is fairly
+trivial to use it to express SAT solving. In addition, Dusa is a research
+prototype and not finely tuned for efficiency, unlike modern SAT solvers,
+so expressing programs in a way that Dusa can (relatively) efficiently find
+solutions is sometimes a challenge.  We discuss this challenge in the context
+of our project in Section~\ref{sec:discussion}.
 
 % TODO stochastic search; streaming solutions; web impl and API
 
