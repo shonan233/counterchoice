@@ -99,7 +99,7 @@ export default function App() {
           Enter your cantus firmus, shift-click to edit counterpoint:
         </label>
         <Notes
-          className={style.mainNotes}
+          canvasClassName={style.mainNotes}
           cf={cf}
           cp={frozenCp}
           editable

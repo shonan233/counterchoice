@@ -1,0 +1,24 @@
+.notesRoot {
+  display: flex;
+}
+
+.notesLabels {
+  display: flex;
+  flex-direction: column-reverse;
+  margin: 0;
+  margin-right: 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.notesLabels > li {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  /* canvas height is min(20vw, 60vh) (width = min(80vw, 60vh*4), 4:1 aspect),
+     so one row band is that / 14. Take ~70% of a band for spacing. */
+  font-size: calc(min(20vw, 60vh) / 15 * 0.7);
+  line-height: 1;
+  font-family: monospace;
+}

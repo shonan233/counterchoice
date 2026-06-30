@@ -43,7 +43,7 @@ export default function Solution({
         <p>
           Solution <span className={style.id}>{id}:</span>
         </p>
-        <Notes cf={cf} cp={cp} className={style.notes} />
+        <Notes cf={cf} cp={cp} canvasClassName={style.notes} />
       </div>
       <button
         type="button"
