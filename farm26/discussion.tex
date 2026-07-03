@@ -50,11 +50,8 @@ The decision to adopt a language like Dusa must be made with proper awareness of
     programming languages, in the context of constraint solving for an artistic
     practice?}
 
-Dusa is only one logic programming language among many, so we elaborate our Dusa experience into design and implementation recommendations for logic programming tools in general.
-By necessity, echoes of timeless advice are visible in our recommendations, but we make this advice more concrete by focusing on a specific gap in the state of language implementation.
-In imperative programming, breakpoint debugging provides a standardized model for the user experience of debuggers, but limited debugging tools exist for logic languages, let alone a standardized user experience.
-In reflecting on the development experience, we wish to better understand desirable modes of programmer interaction for logic programming debuggers.
-The examples provided with each recommendation are meant to help convey the contents of the recommendation; further research is required to identify which example measures are effective.
+We elaborate our experience into design and implementation recommendations for logic programming tools in general.
+Taking inspiration from the mature, standardized user experience available in breakpoint debuggers for imperative languages, we aim to contribute to a comparably clear user experience for logic programs.
 
 In Dusa, the semantics of a logic program is a search space.
 This interpretation plays out when debugging performance issues.
@@ -62,9 +59,6 @@ During one test, our mental model predicted only a few hundred states, but Dusa 
 Beyond counting explored states, programmers need insight into which states were explored and why.
 Traditional interfaces focus on displaying successful solutions, but this is inadequate for debugging, where proof search explored millions of failing states outside the intended search space. 
 Understanding this failing space is essential to understanding buggy program behavior, yet it is hard to understand with current tools both because the states fail and because they are vast in number.
-%These states, where search failed, did not contribute to the final solution set, which was as small as predicted.
-%Logic programs excel at automatically searching large search spaces that emerge from small rule sets, but the failed branches of search are just as important to understanding overall program behavior as successful branches are.
-%There are often millions of such failed branches, far more than a human programmer can efficiently inspect by hand.
 \emph{Design Recommendation:} Provide scalable means to inspect space of intermediate search states, especially failing states.
 \emph{Examples:} For each solution, allow rewinding its proof step-by-step. At each step, show alternative branches and indicate which ones fail. 
 For large state spaces, display a limited set of intermediate and failing spaces.
@@ -74,9 +68,6 @@ The search space semantics of Dusa is equally present in debugging for correctne
 Substantial time was spent debugging rules which never activated because typos resulted in never-true premises.
 Unreachable code is often detected statically in imperative and functional languages, but the search-based nature of logic programs means reachability information is incomplete until runtime.
 We thus recommend hybrid static-dynamic checking.
-%In imperative languages, warnings for these unreachable statements are widespread.
-%In functional programming languages, strong type systems are commonly provided which rule out broad classes of errors before execution.
-%Because logic programs are search-based, reachability information is limited until runtime, and static computations of reachability may need to rely on approximations.
 \emph{Design Recommendations:} Provide hybrid static-dynamic unreachable code detection mechanisms.
 \emph{Examples:} Statically detect premises containing undefined predicates (typos). Statically compute a predicate dependency graph to identify provably-unreachable predicates. 
 Dynamically report rules that occur nowhere in the search space or solution space. Report never-satisfied premises of such rules.
