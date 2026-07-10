@@ -316,7 +316,7 @@ facts, which represent the generated counterpoint:
 \label{sec:divide-and-conquer}
 In practice, the above algorithm can solve 30-note cantus firmi in 1--2 seconds, which sufficed for our needs.
 In principle, a more scalable algorithm is desirable for even longer pieces.
-We present such an algorithm, \emph{divide-and-conquer} approach inspired by how composers often work phrase-by-phrase.
+We present such an algorithm, a \emph{divide-and-conquer} approach inspired by how composers often work phrase-by-phrase.
 This algorithm is conceptualized as a series of separate searches for each (overlapping) phrase, which are then assembled to create a full piece.
 Because Dusa execution is understood as a single search, we chose to use JavaScript to invoke Dusa repeatedly and combine the results; this JavaScript dependency is a main limitation of the algorithm.
 
