@@ -666,7 +666,7 @@ export default function Notes({
         <li>F4</li>
         <li>G4</li>
         <li>A4</li>
-        <li>B5</li>
+        <li>B4</li>
         <li>C5</li>
         <li>D5</li>
         <li>E5</li>
