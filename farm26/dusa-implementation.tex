@@ -41,7 +41,7 @@ An experimental extension is proposed in Section~\ref{sec:divide-and-conquer} wh
 \end{figure}
 
 
-We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C4 (when $\mathtt{N}=0$), D4, \dots, B4, C5 (when $\mathtt{N}=7$), along with a functional predicate \verb|length is T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody. There is no need to encode the information of duration, because the two melodies move in the exact same rhythm.
+We represent the cantus firmus as a functional predicate \verb|cf T is N| mapping each ``time'' $\mathtt{T}\in\{0,1,\dots\}$ to numbers $\mathtt{N}\in\{0,1,\dots,7\}$ representing one octave of the diatonic scale C3 (when $\mathtt{N}=0$), D3, \dots, B3, C4 (when $\mathtt{N}=7$), along with a functional predicate \verb|length is T| specifying the final time step of the given melody. Note that ``time \verb|T|'' simply refers to the \verb|T|\textsuperscript{th} note of the melody. There is no need to encode the information of duration, because the two melodies move in the exact same rhythm.
 
 \begin{verbatim}
   cf 0 is 1.
