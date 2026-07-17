@@ -660,21 +660,9 @@ export default function Notes({
   return (
     <div className={`${style.notesRoot} ${containerClassName ?? ""}`}>
       <ol className={style.notesLabels}>
-        <li>C4</li>
-        <li>D4</li>
-        <li>E4</li>
-        <li>F4</li>
-        <li>G4</li>
-        <li>A4</li>
-        <li>B4</li>
-        <li>C5</li>
-        <li>D5</li>
-        <li>E5</li>
-        <li>F5</li>
-        <li>G5</li>
-        <li>A5</li>
-        <li>B5</li>
-        <li>C6</li>
+        {PITCHES.map(({ name }) => (
+          <li>{name}</li>
+        ))}
       </ol>
       <canvas ref={canvasRef} className={canvasClassName} />
     </div>

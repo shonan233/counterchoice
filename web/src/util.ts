@@ -63,21 +63,21 @@ export interface Pitch {
 }
 
 export const PITCHES: Pitch[] = [
-  { name: "C2", midi: 48 },
-  { name: "D2", midi: 50 },
-  { name: "E2", midi: 52 },
-  { name: "F2", midi: 53 },
-  { name: "G2", midi: 55 },
-  { name: "A2", midi: 57 },
-  { name: "B2", midi: 59 },
-  { name: "C3", midi: 60 },
-  { name: "D3", midi: 62 },
-  { name: "E3", midi: 64 },
-  { name: "F3", midi: 65 },
-  { name: "G3", midi: 67 },
-  { name: "A3", midi: 69 },
-  { name: "B3", midi: 71 },
-  { name: "C4", midi: 72 },
+  { name: "C3", midi: 48 },
+  { name: "D3", midi: 50 },
+  { name: "E3", midi: 52 },
+  { name: "F3", midi: 53 },
+  { name: "G3", midi: 55 },
+  { name: "A3", midi: 57 },
+  { name: "B3", midi: 59 },
+  { name: "C4", midi: 60 },
+  { name: "D4", midi: 62 },
+  { name: "E4", midi: 64 },
+  { name: "F4", midi: 65 },
+  { name: "G4", midi: 67 },
+  { name: "A4", midi: 69 },
+  { name: "B4", midi: 71 },
+  { name: "C5", midi: 72 },
 ];
 
 function termToString(term: Term): string {
